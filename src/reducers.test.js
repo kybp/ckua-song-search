@@ -17,31 +17,42 @@ const isEmptyQuery = (object) => {
 
 describe('queries reducer', () => {
   describe('initial state', () => {
-    const initial = reducer(undefined, { type: 'INIT' })
+    it('is an empty array', () => {
+      const initial = reducer(undefined, { type: 'INIT' })
 
-    it('has one element', () => {
-      assert.strictEqual(initial.length, 1)
-    })
-
-    it('contains a query', () => {
-      assert(isEmptyQuery(initial[0]))
+      assert.deepEqual(initial, [])
     })
   })
 
   describe(ADD_QUERY, () => {
-    const initial = [{ id: 0, artist: 'a', title: 'b', album: 'c' }]
-    const updated = reducer(initial, addQuery())
+    describe('with no parameters', () => {
+      const initial = [{ id: 0, artist: 'a', title: 'b', album: 'c' }]
+      const updated = reducer(initial, addQuery())
 
-    it('leaves existing queries intact', () => {
-      assert.deepEqual(updated[0], initial[0])
+      it('leaves existing queries intact', () => {
+        assert.deepEqual(updated[0], initial[0])
+      })
+
+      it('adds an element', () => {
+        assert.strictEqual(updated.length, initial.length + 1)
+      })
+
+      it('adds an empty query', () => {
+        assert(isEmptyQuery(updated[1]))
+      })
     })
 
-    it('adds an element', () => {
-      assert.strictEqual(updated.length, initial.length + 1)
-    })
+    describe('with a query object', () => {
+      const initial = [{ id: 0, artist: 'a', title: 'b', album: 'c' }]
+      const query   = { artist: 'd', title: 'e', album: 'f' }
+      const updated = reducer(initial, addQuery(query))
 
-    it('adds an empty query', () => {
-      assert(isEmptyQuery(updated[1]))
+      it('adds an "id" property to the object', () => {
+        assert.strictEqual(typeof updated[1].id, 'number')
+        assert.deepEqual(updated[1], Object.assign({}, query, {
+          id: updated[1].id
+        }))
+      })
     })
   })
 

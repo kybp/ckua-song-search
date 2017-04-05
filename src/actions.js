@@ -4,7 +4,7 @@ export const DELETE_QUERY = 'DELETE_QUERY'
 
 let queryId = 1
 
-export const addQuery = () => ({
+export const addQuery = (object) => Object.assign({}, object, {
   type: ADD_QUERY,
   id:   queryId++
 })
