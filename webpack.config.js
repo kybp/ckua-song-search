@@ -1,0 +1,23 @@
+const webpack = require('webpack')
+const path    = require('path')
+
+const srcDir   = path.join(__dirname, 'src')
+const buildDir = path.join(__dirname, 'dist')
+
+module.exports = {
+  entry: ['babel-polyfill', path.join(srcDir, 'index.jsx')],
+  output: {
+    path:     buildDir,
+    filename: 'bundle.js'
+  },
+  module: {
+    rules: [{
+      test:    /\.jsx?$/,
+      exclude: /node_modules/,
+      use:     [{ loader: 'babel-loader' }]
+    }]
+  },
+  resolve: {
+    extensions: ['.js', '.jsx']
+  }
+}
