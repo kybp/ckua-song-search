@@ -2,6 +2,7 @@ from urllib.parse import unquote
 from flask import Flask, jsonify, request
 from flask.json import JSONEncoder
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import func
 
 app = Flask(__name__, static_folder='dist')
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgres://localhost:5432/ckua'
@@ -52,32 +53,48 @@ def get_song_queries(query_string):
 
     return queries
 
+def normalize_query_attr(attr):
+    return attr.lower().strip()
+
 def find_songs(query):
-    q = Song.query
+    q = Song.query.order_by(Song.started.desc())
+
+    def filter_contains(attr):
+        model_attr = func.lower(getattr(Song, attr))
+        query_attr = normalize_query_attr(query[attr])
+        return q.filter(model_attr.contains(query_attr))
+
     if 'artist' in query:
-        q = q.filter(Song.artist.contains(query['artist']))
+        q = filter_contains('artist')
     if 'title' in query:
-        q = q.filter(Song.title.contains(query['title']))
+        q = filter_contains('title')
     if 'album' in query:
-        q = q.filter(Song.album.contains(query['album']))
+        q = filter_contains('album')
+
     return q
 
 def check_song(song, query):
-    if 'artist' in query and query['artist'] not in song.artist:
+    def matches(attr):
+        if attr not in query:
+            return True
+        model_attr = getattr(song, attr).lower()
+        query_attr = normalize_query_attr(query[attr])
+        return query_attr in model_attr
+    if not matches('artist'):
         return False
-    if 'title' in query and query['title'] not in song.title:
+    if not matches('title'):
         return False
-    if 'album' in query and query['album'] not in song.album:
+    if not matches('album'):
         return False
     return True
 
 def validate_queries(queries):
-    minimum_term_length = 5
-    for query in queries:
-        long_enough = lambda value: len(value) < minimum_term_length
-        if all(map(long_enough, query.values())):
-            return {'error': 'At least one search field per query must ' +
-                    'have at least {} characters'.format(minimum_term_length)}
+    minimum_term_length = 3
+    long_enough = lambda value: len(value) < minimum_term_length
+    if all(map(long_enough, queries[0].values())):
+        return {'error': 'At least one search field per query must ' +
+                         'have at least {} characters'.format(
+                             minimum_term_length)}
 
 @app.route('/search')
 def search():
