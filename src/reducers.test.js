@@ -1,10 +1,12 @@
 import { assert } from 'chai'
-import { queries } from './reducers'
+import { loadingSongs, queries, songSets } from './reducers'
 import { addQuery,    ADD_QUERY    } from './actions'
 import { changeQuery, CHANGE_QUERY } from './actions'
 import { deleteQuery, DELETE_QUERY } from './actions'
-
-const reducer = queries
+import { addSongSets,   ADD_SONG_SETS   } from './actions'
+import { resetSongSets, RESET_SONG_SETS } from './actions'
+import { startLoadingSongs,  START_LOADING_SONGS  } from './actions'
+import { finishLoadingSongs, FINISH_LOADING_SONGS } from './actions'
 
 const isEmptyQuery = (object) => {
   const { id, artist, title, album } = object
@@ -16,6 +18,8 @@ const isEmptyQuery = (object) => {
 }
 
 describe('queries reducer', () => {
+  const reducer = queries
+
   describe('initial state', () => {
     it('is an empty array', () => {
       const initial = reducer(undefined, { type: 'INIT' })
@@ -80,6 +84,65 @@ describe('queries reducer', () => {
       ]
       const updated = reducer(initial, deleteQuery(initial[1].id))
       assert.deepEqual(updated, [initial[0], initial[2]])
+    })
+  })
+})
+
+describe('songs reducer', () => {
+  const reducer = songSets
+  const songSetList = [[
+    { artist: 'a', title: 'b', album: 'd', started: 'e' },
+    { artist: 'f', title: 'g', album: 'h', started: 'i' }
+  ], [
+    { artist: 'j', title: 'k', album: 'l', started: 'm' }
+  ]]
+
+  describe('initial state', () => {
+    it('is an empty array', () => {
+      const initial = reducer(undefined, { type: 'INIT' })
+      assert.deepEqual(initial, [])
+    })
+  })
+
+  describe(RESET_SONG_SETS, () => {
+    it('clears the list of song sets', () => {
+      const initial = songSetList
+      const updated = reducer(initial, resetSongSets())
+      assert.deepEqual(updated, [])
+    })
+  })
+
+  describe(ADD_SONG_SETS, () => {
+    it('adds the given songs to the list', () => {
+      const initial  = songSetList.slice(0, 1)
+      const songSets = songSetList.slice(1)
+      const updated  = reducer(initial, addSongSets(songSets))
+      assert.deepEqual(updated, songSetList)
+    })
+  })
+})
+
+describe('loading songs reducer', () => {
+  const reducer = loadingSongs
+
+  describe('initial state', () => {
+    it('is false', () => {
+      const initial = reducer(undefined, { type: 'INIT' })
+      assert.strictEqual(initial, false)
+    })
+  })
+
+  describe(START_LOADING_SONGS, () => {
+    it('sets the state to true', () => {
+      const state = reducer(false, startLoadingSongs())
+      assert.strictEqual(state, true)
+    })
+  })
+
+  describe(FINISH_LOADING_SONGS, () => {
+    it('sets the state to false', () => {
+      const state = reducer(true, finishLoadingSongs())
+      assert.strictEqual(state, false)
     })
   })
 })

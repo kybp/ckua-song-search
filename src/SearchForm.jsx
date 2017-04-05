@@ -1,6 +1,7 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
 import AddQueryButton from './AddQueryButton'
+import SearchButton from './SearchButton'
 import SearchQuery from './SearchQuery'
 import { addQuery } from './actions'
 
@@ -41,6 +42,7 @@ class SearchForm extends Component {
                 : undefined }
             </div>
           )) }
+        <SearchButton />
       </div>
     )
   }
