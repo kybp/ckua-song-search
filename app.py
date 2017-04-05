@@ -75,7 +75,7 @@ def find_songs(query):
 
 def check_song(song, query):
     def matches(attr):
-        if attr not in query:
+        if attr not in query or not query[attr]:
             return True
         model_attr = getattr(song, attr).lower()
         query_attr = normalize_query_attr(query[attr])
