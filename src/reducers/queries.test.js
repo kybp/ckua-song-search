@@ -1,7 +1,8 @@
 import { assert } from 'chai'
-import { addQuery,    ADD_QUERY    } from '../actions'
-import { changeQuery, CHANGE_QUERY } from '../actions'
-import { deleteQuery, DELETE_QUERY } from '../actions'
+import { addQuery,        ADD_QUERY         } from '../actions'
+import { changeQuery,     CHANGE_QUERY      } from '../actions'
+import { deleteQuery,     DELETE_QUERY      } from '../actions'
+import { toggleQueryLock, TOGGLE_QUERY_LOCK } from '../actions'
 import reducer, { field } from './queries'
 
 const isEmptyQuery = (object) => {
@@ -88,6 +89,32 @@ describe('queries reducer', () => {
       ]
       const updated = reducer(initial, deleteQuery(initial[1].id))
       assert.deepEqual(updated, [initial[0], initial[2]])
+    })
+  })
+
+  describe(TOGGLE_QUERY_LOCK, () => {
+    describe('when the side is locked', () => {
+      it('unlocks that side', () => {
+        const initial = [{
+          id: 0, artist: field('a', true),
+          title: field('b'), album: field('c')
+        }]
+        const updated = reducer(initial, toggleQueryLock(0, 'artist', 'left'))
+        assert.deepEqual(updated[0].artist, Object.assign(
+          {}, initial[0].artist, { lockLeft: false }))
+      })
+    })
+
+    describe('when the side is unlocked', () => {
+      it('locks that side', () => {
+        const initial = [{
+          id: 0, artist: field('a', false, true),
+          title: field('b'), album: field('c')
+        }]
+        const updated = reducer(initial, toggleQueryLock(0, 'artist', 'right'))
+        assert.deepEqual(updated[0].artist, Object.assign(
+          {}, initial[0].artist, { lockRight: false }))
+      })
     })
   })
 })

@@ -1,4 +1,5 @@
 import { ADD_QUERY, CHANGE_QUERY, DELETE_QUERY } from '../actions'
+import { TOGGLE_QUERY_LOCK } from '../actions'
 
 export const field = (text, lockLeft, lockRight) => ({
   text:      text      === undefined ? ''    : text,
@@ -23,6 +24,13 @@ const queryFromAction = (action) => {
   }
 }
 
+const lock = (side) => {
+  const capitalize = (string) => {
+    return string.charAt(0).toUpperCase() + string.substring(1)
+  }
+  return 'lock' + capitalize(side)
+}
+
 export default (state = [], action) => {
   switch (action.type) {
   case ADD_QUERY:
@@ -35,6 +43,16 @@ export default (state = [], action) => {
         : query))
   case DELETE_QUERY:
     return state.filter((query) => query.id !== action.id)
+  case TOGGLE_QUERY_LOCK:
+    return state.map((query) => (
+      query.id === action.id
+        ? Object.assign({}, query, {
+          [action.field]: Object.assign({}, query[action.field], {
+            [lock(action.side)]: ! query[action.field][lock(action.side)]
+          })
+        })
+        : query
+    ))
   default:
     return state
   }

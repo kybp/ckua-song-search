@@ -1,6 +1,21 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
-import { changeQuery, deleteQuery } from './actions'
+import { changeQuery, deleteQuery, toggleQueryLock } from './actions'
+
+const QueryField = ({ name, value, onChange, toggleLock }) => (
+  <p>
+    <button className={ value.lockLeft ? 'locked' : 'unlocked' }
+            onClick={ toggleLock(name, 'left') }>
+      L
+    </button>
+    <input type="text" placeholder={ name } value={ value.text }
+           onChange={ onChange }/>
+    <button className={ value.lockRight ? 'locked' : 'unlocked' }
+            onClick={ toggleLock(name, 'right') }>
+      L
+    </button>
+  </p>
+)
 
 class SearchQuery extends Component {
   handleChangeFor(field) {
@@ -26,19 +41,24 @@ class SearchQuery extends Component {
   }
 
   render() {
-    const { artist, title, album } = this.props
     const handleChangeFor = this.handleChangeFor.bind(this)
+    const toggleLock = (name, side) => () => {
+      this.props.dispatch(toggleQueryLock(this.props.id, name, side))
+    }
 
     return (
-      <p>
-        <input type="text" placeholder="artist"
-               value={ artist.text } onChange={ handleChangeFor('artist') } />
-        <input type="text" placeholder="title"
-               value={ title.text } onChange={ handleChangeFor('title') } />
-        <input type="text" placeholder="album"
-               value={ album.text } onChange={ handleChangeFor('album') } />
+      <div>
+        <QueryField name="artist" value={ this.props.artist }
+                    onChange={ handleChangeFor('artist') }
+                    toggleLock={ toggleLock } />
+        <QueryField name="title" value={ this.props.title }
+                    onChange={ handleChangeFor('title') }
+                    toggleLock={ toggleLock } />
+        <QueryField name="album" value={ this.props.album }
+                    onChange={ handleChangeFor('album') }
+                    toggleLock={ toggleLock } />
         { this.deleteButton() }
-      </p>
+      </div>
     )
   }
 }

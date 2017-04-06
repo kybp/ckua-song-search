@@ -1,6 +1,7 @@
-export const ADD_QUERY    = 'ADD_QUERY'
-export const CHANGE_QUERY = 'CHANGE_QUERY'
-export const DELETE_QUERY = 'DELETE_QUERY'
+export const ADD_QUERY         = 'ADD_QUERY'
+export const CHANGE_QUERY      = 'CHANGE_QUERY'
+export const DELETE_QUERY      = 'DELETE_QUERY'
+export const TOGGLE_QUERY_LOCK = 'TOGGLE_QUERY_LOCK'
 
 export const ADD_SONG_SETS   = 'ADD_SONG_SETS'
 export const RESET_SONG_SETS = 'RESET_SONG_SETS'
@@ -23,6 +24,11 @@ export const changeQuery = ({ id, artist, title, album }) => ({
 export const deleteQuery = (id) => ({
   type: DELETE_QUERY,
   id
+})
+
+export const toggleQueryLock = (id, field, side) => ({
+  type: TOGGLE_QUERY_LOCK,
+  id, field, side
 })
 
 export const addSongSets = (songs) => ({
