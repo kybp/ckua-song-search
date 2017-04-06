@@ -2,7 +2,7 @@ from urllib.parse import unquote
 from flask import Flask, jsonify, request
 from flask.json import JSONEncoder
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import func
+from sqlalchemy import func, text
 
 app = Flask(__name__, static_folder='dist')
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgres://localhost:5432/ckua'
@@ -36,6 +36,7 @@ class JSONSongEncoder(JSONEncoder):
 app.json_encoder = JSONSongEncoder
 
 def get_song_queries(query_string):
+    fields = ['artist', 'title', 'album']
     queries = []
     query   = {}
 
@@ -45,8 +46,19 @@ def get_song_queries(query_string):
         if param_name in query:
             queries.append(query)
             query = {}
-        if param_name in ['artist', 'title', 'album']:
-            query[param_name] = value
+        if param_name in fields:
+            if param_name in query:
+                query[param_name]['text'] = value
+            else:
+                query[param_name] = {'text': value}
+        for field in fields:
+            if param_name == field + '-lockLeft':
+                query[field]['lockLeft'] = (
+                    field in query and value.lower() == 'true')
+        for field in fields:
+            if param_name == field + '-lockRight':
+                query[field]['lockRight'] = (
+                    field in query and value.lower() == 'true')
 
     if query:
         queries.append(query)
@@ -60,9 +72,17 @@ def find_songs(query):
     q = Song.query.order_by(Song.started.desc())
 
     def filter_contains(attr):
-        model_attr = func.lower(getattr(Song, attr))
-        query_attr = normalize_query_attr(query[attr])
-        return q.filter(model_attr.contains(query_attr))
+        query_attr = normalize_query_attr(query[attr]['text'])\
+                     .replace('=', '==')\
+                     .replace('%', '=%').replace('_', '=_')
+        if not query_attr:
+            return q
+        if not query[attr]['lockLeft']:
+            query_attr = '%' + query_attr
+        if not query[attr]['lockRight']:
+            query_attr += '%'
+        return q.filter(text(attr + " ilike :value escape '='"))\
+            .params(value=query_attr)
 
     if 'artist' in query:
         q = filter_contains('artist')
@@ -75,10 +95,14 @@ def find_songs(query):
 
 def check_song(song, query):
     def matches(attr):
-        if attr not in query or not query[attr]:
+        if attr not in query or not query[attr]['text']:
             return True
         model_attr = getattr(song, attr).lower()
-        query_attr = normalize_query_attr(query[attr])
+        query_attr = normalize_query_attr(query[attr]['text'])
+        if query[attr]['lockLeft'] and not model_attr.startswith(query_attr):
+            return False
+        if query[attr]['lockRight'] and not model_attr.endswith(query_attr):
+            return False
         return query_attr in model_attr
     if not matches('artist'):
         return False

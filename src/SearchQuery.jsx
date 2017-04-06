@@ -9,7 +9,9 @@ class SearchQuery extends Component {
       this.props.dispatch(changeQuery(Object.assign({
         id: this.props.queryId,
         artist, title, album
-      }, { [field]: event.target.value })))
+      }, { [field]: Object.assign({}, this.props[field], {
+        text: event.target.value
+      })})))
     }
   }
 
@@ -30,11 +32,11 @@ class SearchQuery extends Component {
     return (
       <p>
         <input type="text" placeholder="artist"
-               value={ artist } onChange={ handleChangeFor('artist') } />
+               value={ artist.text } onChange={ handleChangeFor('artist') } />
         <input type="text" placeholder="title"
-               value={ title } onChange={ handleChangeFor('title') } />
+               value={ title.text } onChange={ handleChangeFor('title') } />
         <input type="text" placeholder="album"
-               value={ album } onChange={ handleChangeFor('album') } />
+               value={ album.text } onChange={ handleChangeFor('album') } />
         { this.deleteButton() }
       </p>
     )
