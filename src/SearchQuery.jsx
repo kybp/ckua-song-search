@@ -3,7 +3,7 @@ import { connect } from 'react-redux'
 import { changeQuery, deleteQuery, toggleQueryLock } from './actions'
 
 const QueryField = ({ name, value, onChange, toggleLock }) => (
-  <p>
+  <div className="query-field">
     <button className={ value.lockLeft ? 'locked' : 'unlocked' }
             onClick={ toggleLock(name, 'left') }>
       L
@@ -14,7 +14,7 @@ const QueryField = ({ name, value, onChange, toggleLock }) => (
             onClick={ toggleLock(name, 'right') }>
       L
     </button>
-  </p>
+  </div>
 )
 
 class SearchQuery extends Component {
@@ -47,7 +47,7 @@ class SearchQuery extends Component {
     }
 
     return (
-      <div>
+      <div className="query-form">
         <QueryField name="artist" value={ this.props.artist }
                     onChange={ handleChangeFor('artist') }
                     toggleLock={ toggleLock } />
