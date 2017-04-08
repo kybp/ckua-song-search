@@ -81,8 +81,8 @@ def find_songs(query):
             query_attr = '%' + query_attr
         if not query[attr]['lockRight']:
             query_attr += '%'
-        return q.filter(text(attr + " ilike :value escape '='"))\
-            .params(value=query_attr)
+        return q.filter(text("{} ilike :{} escape '='".format(attr, attr)))\
+            .params(**{attr: query_attr})
 
     if 'artist' in query:
         q = filter_contains('artist')
