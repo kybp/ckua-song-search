@@ -1,3 +1,4 @@
+from datetime import datetime
 from urllib.parse import unquote
 from flask import Flask, jsonify, request
 from flask.json import JSONEncoder
@@ -35,14 +36,20 @@ class JSONSongEncoder(JSONEncoder):
         return super(JSONSongEncoder, self).default(obj)
 app.json_encoder = JSONSongEncoder
 
-def get_song_queries(query_string):
-    fields = ['artist', 'title', 'album']
-    queries = []
-    query   = {}
+def get_search_parameters(query_string):
+    fields     = ['artist', 'title', 'album']
+    queries    = []
+    query      = {}
+    start_date = ''
+    end_date   = ''
 
     for query_param in query_string.split('&'):
         param_name, value = query_param.split('=')
         value = unquote(value)
+        if param_name == 'start' and value:
+            start_date = datetime.strptime(value, '%Y-%m-%d')
+        elif param_name == 'end' and value:
+            end_date = datetime.strptime(value, '%Y-%m-%d')
         if param_name in query:
             queries.append(query)
             query = {}
@@ -63,12 +70,15 @@ def get_song_queries(query_string):
     if query:
         queries.append(query)
 
-    return queries
+    return {
+        'queries':    queries,
+        'start_date': start_date,
+        'end_date':   end_date }
 
 def normalize_query_attr(attr):
     return attr.lower().strip()
 
-def find_songs(query):
+def find_songs(search_parameters, query):
     q = Song.query.order_by(Song.started.desc())
 
     def filter_contains(attr):
@@ -90,6 +100,13 @@ def find_songs(query):
         q = filter_contains('title')
     if 'album' in query:
         q = filter_contains('album')
+
+    start_date = search_parameters.get('start_date', '')
+    if start_date:
+        q = q.filter(Song.started >= start_date)
+    end_date = search_parameters.get('end_date', '')
+    if end_date:
+        q = q.filter(Song.started <= end_date)
 
     return q
 
@@ -122,14 +139,14 @@ def validate_queries(queries):
 
 @app.route('/search')
 def search():
-    queries = get_song_queries(request.query_string.decode())
-    errors = validate_queries(queries)
+    search_parameters = get_search_parameters(request.query_string.decode())
+    errors = validate_queries(search_parameters['queries'])
     if errors is not None:
         return jsonify(errors), 400
-    next_queries = queries[1:]
+    next_queries = search_parameters['queries'][1:]
     results = []
-    n_songs = len(queries) - 1
-    for song in find_songs(queries[0]):
+    n_songs = len(search_parameters['queries']) - 1
+    for song in find_songs(search_parameters, search_parameters['queries'][0]):
         next_songs = song.next_songs(n_songs).all()
         if len(next_songs) < n_songs:
             continue

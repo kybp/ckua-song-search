@@ -15,7 +15,7 @@ class SearchButton extends Component {
             `${key}-lockLeft=${query[key].lockLeft}&` +
             `${key}-lockRight=${query[key].lockRight}`)
         }).join('&')
-    )).join('&')
+    )).join('&') + `&start=${this.props.startDate}&end=${this.props.endDate}`
 
     this.props.dispatch(startLoadingSongs())
     const xhr = new XMLHttpRequest()
@@ -42,6 +42,10 @@ class SearchButton extends Component {
   }
 }
 
-const mapStateToProps = ({ queries }) => ({ queries })
+const mapStateToProps = ({ queries, dates }) => ({
+  startDate: dates.startDate,
+  endDate:   dates.endDate,
+  queries
+})
 
 export default connect(mapStateToProps)(SearchButton)
