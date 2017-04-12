@@ -9,6 +9,9 @@ const onSameDay = (date, otherDate) => (
   otherDate >= dateDaysAfter(date, 0) && otherDate < dateDaysAfter(date, 1)
 )
 
+const startedFromGroup = (group) => group[0]
+const matchesFromGroup = (group) => group[1]
+
 const groupByDate = (songSets) => {
   if (songSets.length === 0) return []
 
@@ -16,11 +19,11 @@ const groupByDate = (songSets) => {
 
   for (let i = 1; i < songSets.length; ++i) {
     const lastGroup   = groups[groups.length - 1]
-    const lastStarted = lastGroup[0]
+    const lastStarted = startedFromGroup(lastGroup)
     const thisStarted = new Date(songSets[i][0].started)
 
     if (onSameDay(thisStarted, lastStarted)) {
-      lastGroup[1].push(songSets[i])
+      matchesFromGroup(lastGroup).push(songSets[i])
     } else {
       groups.push([thisStarted, songSets[i]])
     }
@@ -35,8 +38,8 @@ const numberOfDaysBetween = (date1, date2) => {
 }
 
 const getStartAndEnd = (groups) => {
-  const start = groups[groups.length - 1][0]
-  const end   = groups[0][0]
+  const start = startedFromGroup(groups[groups.length - 1])
+  const end   = startedFromGroup(groups[0])
 
   if (numberOfDaysBetween(start, end) === 0) {
     return [dateDaysAfter(start, -1), dateDaysAfter(end, 1)]
@@ -45,16 +48,64 @@ const getStartAndEnd = (groups) => {
   }
 }
 
-const Axes = ({ xMargin, chartLength, strokeWidth }) => (
+const Axes = ({ xMargin, daysInChart, strokeWidth }) => (
   <g>
     <line stroke="black" strokeWidth={ strokeWidth }
           x1={ xMargin }               y1="0"
-          x2={ xMargin }               y2={ chartLength } />
+          x2={ xMargin }               y2={ daysInChart } />
     <line stroke="black" strokeWidth={ strokeWidth }
-          x1={ xMargin }               y1={ chartLength }
-          x2={ chartLength + xMargin } y2={ chartLength } />
+          x1={ xMargin }               y1={ daysInChart }
+          x2={ daysInChart + xMargin } y2={ daysInChart } />
   </g>
 )
+
+/**
+ * The omount of 'spread' to add around each side of a point on the chart to
+ * smooth the line chart. The X coordinate as calculated is used as a base
+ * point xSpread to the left, the point itself is drawn at x + xSpread, and the
+ * line is drawn to another base point xSpread to the right.
+ */
+const xSpread = 0.1
+
+/**
+ * Return the Y coordinate to chart for the given songCount, scaled
+ * appropriately for the chart.
+ */
+const getY = (songCount, maxCount, daysInChart) => {
+  return daysInChart - songCount * daysInChart / (maxCount + 1)
+}
+
+const pointsFromGroups = (groups, xMargin, maxCount, daysInChart) => {
+  const [start, _] = getStartAndEnd(groups)
+
+  return groups.map(([started, songs]) => {
+    const x = xMargin + xSpread + numberOfDaysBetween(start, started)
+    const y = getY(songs.length, maxCount, daysInChart)
+    return [x, y]
+  })
+}
+
+const lineChartPoints = (points, zeroPlays) => {
+  return points.map(([x, y]) => (
+    `${x - xSpread},${zeroPlays} ${x},${y} ${x + xSpread},${zeroPlays}`
+  )).join(' ')
+}
+
+const LineChart = ({ points, strokeWidth }) => (
+  <polyline fill="orange" stroke="orange"
+            strokeWidth={ strokeWidth }
+            points={ points } />
+)
+
+const getMaxCount = (groups) => {
+  let maxCount = 0
+
+  for (let group of groups) {
+    maxCount = Math.max(matchesFromGroup(group).length, maxCount)
+  }
+
+  return maxCount
+}
 
 const SongChart = ({ songSets }) => {
   if (songSets.length === 0) return <h1>Empty !</h1>
@@ -65,21 +116,9 @@ const SongChart = ({ songSets }) => {
   const xMargin      = dayRange / 20
   const yMargin      = dayRange / 10
   const strokeWidth  = dayRange / 365 / 1.5
-
-  let maxCount = 0
-  for (let group of groups) {
-    maxCount = Math.max(group[1].length, maxCount)
-  }
-
-  const getY = (songCount) => dayRange - songCount * dayRange / (maxCount + 1)
-  const noPlays = getY(0)
-
-  const points = groups.map(([started, songs]) => {
-    const dx = 0.1
-    const x  = xMargin + dx + numberOfDaysBetween(start, started)
-    const y  = getY(songs.length)
-    return `${x - dx},${noPlays} ${x},${y} ${x + dx},${noPlays}`
-  }).join(' ')
+  const maxCount     = getMaxCount(groups)
+  const zeroPlays    = getY(0, maxCount, dayRange)
+  const points       = pointsFromGroups(groups, xMargin, maxCount, dayRange)
 
   return (
     <div>
@@ -91,11 +130,10 @@ const SongChart = ({ songSets }) => {
       <svg style={{ backgroundColor: 'lightblue', width: 700, height: 300 }}
            viewBox={ `0 0 ${dayRange + xMargin} ${dayRange + yMargin}` }
            preserveAspectRatio="none">
-        <polyline fill="none" stroke="orange"
-                  strokeWidth={ strokeWidth }
-                  points={ points } />
-        <Axes xMargin={ xMargin } chartLength={ dayRange }
+        <Axes xMargin={ xMargin } daysInChart={ dayRange }
               strokeWidth={ strokeWidth } />
+        <LineChart points={ lineChartPoints(points, zeroPlays) }
+                   strokeWidth={ strokeWidth } />
       </svg>
     </div>
   )
