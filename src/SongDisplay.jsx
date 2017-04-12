@@ -45,12 +45,26 @@ const getStartAndEnd = (groups) => {
   }
 }
 
+const Axes = ({ xMargin, chartLength, strokeWidth }) => (
+  <g>
+    <line stroke="black" strokeWidth={ strokeWidth }
+          x1={ xMargin }               y1="0"
+          x2={ xMargin }               y2={ chartLength } />
+    <line stroke="black" strokeWidth={ strokeWidth }
+          x1={ xMargin }               y1={ chartLength }
+          x2={ chartLength + xMargin } y2={ chartLength } />
+  </g>
+)
+
 const SongChart = ({ songSets }) => {
   if (songSets.length === 0) return <h1>Empty !</h1>
 
   const groups       = groupByDate(songSets)
   const [start, end] = getStartAndEnd(groups)
   const dayRange     = numberOfDaysBetween(start, end)
+  const xMargin      = dayRange / 20
+  const yMargin      = dayRange / 10
+  const strokeWidth  = dayRange / 365 / 1.5
 
   let maxCount = 0
   for (let group of groups) {
@@ -61,25 +75,27 @@ const SongChart = ({ songSets }) => {
   const noPlays = getY(0)
 
   const points = groups.map(([started, songs]) => {
-    const x = numberOfDaysBetween(start, started)
-    const y = getY(songs.length)
-    return `${x - 0.1},${noPlays} ${x},${y} ${x + 0.1},${noPlays}`
+    const dx = 0.1
+    const x  = xMargin + dx + numberOfDaysBetween(start, started)
+    const y  = getY(songs.length)
+    return `${x - dx},${noPlays} ${x},${y} ${x + dx},${noPlays}`
   }).join(' ')
 
   return (
     <div>
-      <h1>
-        Charting from { start.toString() } to { end.toString() }
-      </h1>
       <h2>
-        Max plays in one day: { maxCount }
+        Charting from { start.toString() } to { end.toString() }
       </h2>
-      <svg style={{ backgroundColor: 'steelblue', width: 700, height: 300 }}
-           viewBox={ `0 0 ${dayRange} ${dayRange}` }
+      <h2>Total plays: { songSets.length }</h2>
+      <h2>Max plays in one day: { maxCount }</h2>
+      <svg style={{ backgroundColor: 'lightblue', width: 700, height: 300 }}
+           viewBox={ `0 0 ${dayRange + xMargin} ${dayRange + yMargin}` }
            preserveAspectRatio="none">
-        <polyline fill="none" stroke="lightgreen"
-                  strokeWidth={ dayRange / 365 / 1.5 }
+        <polyline fill="none" stroke="orange"
+                  strokeWidth={ strokeWidth }
                   points={ points } />
+        <Axes xMargin={ xMargin } chartLength={ dayRange }
+              strokeWidth={ strokeWidth } />
       </svg>
     </div>
   )
