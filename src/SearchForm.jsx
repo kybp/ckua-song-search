@@ -1,9 +1,10 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
 import AddQueryButton from './AddQueryButton'
+import DateSelector from './DateSelector'
 import SearchButton from './SearchButton'
 import SearchQuery from './SearchQuery'
-import { addQuery } from './actions'
+import { addQuery, setStartDate, setEndDate } from './actions'
 
 class SearchForm extends Component {
   componentWillMount() {
@@ -33,6 +34,18 @@ class SearchForm extends Component {
   render() {
     return (
       <div>
+        <p>Start date:
+          <DateSelector value={ this.props.startDate }
+                        onSelect={ (date) => {
+                            this.props.dispatch(setStartDate(date))
+                          } }/>
+        </p>
+        <p>End date:
+          <DateSelector value={ this.props.endDate }
+                        onSelect={ (date) => {
+                            this.props.dispatch(setEndDate(date))
+                          } }/>
+        </p>
         { this.props.queries.map((query, index) => (
             <div key={ query.id }>
               <SearchQuery deletable={ this.props.queries.length > 1 }
@@ -48,6 +61,10 @@ class SearchForm extends Component {
   }
 }
 
-const mapStateToProps = ({ queries }) => ({ queries })
+const mapStateToProps = ({ queries, dates }) => ({
+  startDate: dates.startDate,
+  endDate:   dates.endDate,
+  queries
+})
 
 export default connect(mapStateToProps)(SearchForm)

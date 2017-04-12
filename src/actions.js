@@ -9,6 +9,10 @@ export const RESET_SONG_SETS = 'RESET_SONG_SETS'
 export const START_LOADING_SONGS  = 'START_LOADING_SONGS'
 export const FINISH_LOADING_SONGS = 'FINISH_LOADING_SONGS'
 
+export const SET_START_DATE = 'SET_START_DATE'
+export const SET_END_DATE   = 'SET_END_DATE'
+export const INVALID_DATE   = 'INVALID_DATE'
+
 let queryId = 1
 
 export const addQuery = (object) => Object.assign({}, object, {
@@ -46,4 +50,14 @@ export const startLoadingSongs = () => ({
 
 export const finishLoadingSongs = () => ({
   type: FINISH_LOADING_SONGS
+})
+
+export const setStartDate = (date) => ({
+  type: SET_START_DATE,
+  date
+})
+
+export const setEndDate = (date) => ({
+  type: SET_END_DATE,
+  date
 })

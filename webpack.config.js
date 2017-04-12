@@ -15,9 +15,13 @@ module.exports = {
       test:    /\.jsx?$/,
       exclude: /node_modules/,
       use:     [{ loader: 'babel-loader' }]
+    }, {
+      test: /\.css$/,
+      use:  ['style-loader', 'css-loader']
     }]
   },
   resolve: {
-    extensions: ['.js', '.jsx']
+    extensions: ['.js', '.jsx'],
+    alias: { picker: 'pickadate/lib/picker' }
   }
 }
