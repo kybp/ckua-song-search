@@ -97,6 +97,18 @@ const LineChart = ({ points, strokeWidth }) => (
             points={ points } />
 )
 
+const ScatterPlot = ({ points, strokeWidth }) => {
+  const r = strokeWidth * 3
+
+  return (
+    <g>
+      { points.map(([x, y], index) => (
+          <circle cx={ x } cy={ y } r={ r } fill="red" key={ index } />
+        ))}
+    </g>
+  )
+}
+
 const getMaxCount = (groups) => {
   let maxCount = 0
 
@@ -127,13 +139,15 @@ const SongChart = ({ songSets }) => {
       </h2>
       <h2>Total plays: { songSets.length }</h2>
       <h2>Max plays in one day: { maxCount }</h2>
-      <svg style={{ backgroundColor: 'lightblue', width: 700, height: 300 }}
-           viewBox={ `0 0 ${dayRange + xMargin} ${dayRange + yMargin}` }
+      <svg style={{ backgroundColor: 'lightblue', width: 700, height: 700 }}
+           viewBox={ `0 0 ${dayRange + xMargin + xSpread * 2} ` +
+                     (dayRange + yMargin) }
            preserveAspectRatio="none">
         <Axes xMargin={ xMargin } daysInChart={ dayRange }
               strokeWidth={ strokeWidth } />
         <LineChart points={ lineChartPoints(points, zeroPlays) }
                    strokeWidth={ strokeWidth } />
+        <ScatterPlot points={ points } strokeWidth={ strokeWidth } />
       </svg>
     </div>
   )
