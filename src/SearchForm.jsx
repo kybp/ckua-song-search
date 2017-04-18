@@ -33,29 +33,31 @@ class SearchForm extends Component {
 
   render() {
     return (
-      <div>
-        <p>Start date:
-          <DateSelector value={ this.props.startDate }
-                        onSelect={ (date) => {
-                            this.props.dispatch(setStartDate(date))
-                          } }/>
-        </p>
-        <p>End date:
-          <DateSelector value={ this.props.endDate }
-                        onSelect={ (date) => {
-                            this.props.dispatch(setEndDate(date))
-                          } }/>
-        </p>
+      <div className="search-form">
+        <div className="range-selector">
+          <DateSelector
+              label="Start date"
+              value={ this.props.startDate }
+              onSelect={ (date) => {
+                  this.props.dispatch(setStartDate(date))
+                }} />
+          <DateSelector
+              label="End date"
+              value={ this.props.endDate }
+              onSelect={ (date) => {
+                  this.props.dispatch(setEndDate(date))
+                }} />
+        </div>
         { this.props.queries.map((query, index) => (
             <div key={ query.id }>
               <SearchQuery deletable={ this.props.queries.length > 1 }
                            queryId={ query.id } />
-              { index + 1 == this.props.queries.length
-                ? <AddQueryButton />
-                : undefined }
             </div>
           )) }
-        <SearchButton />
+        <div className="controls">
+          <AddQueryButton />
+          <SearchButton   />
+        </div>
       </div>
     )
   }

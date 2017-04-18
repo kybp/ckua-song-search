@@ -40,7 +40,12 @@ class DateSelector extends Component {
   }
 
   render() {
-    return <input type="date" ref="datepicker" value={ this.props.value } />
+    return (
+      <div className="date-selector">
+        <label>{ this.props.label }</label>
+        <input type="date" ref="datepicker" value={ this.props.value } />
+      </div>
+    )
   }
 }
 

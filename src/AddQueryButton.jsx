@@ -3,7 +3,9 @@ import { connect } from 'react-redux'
 import { addQuery } from './actions'
 
 const AddQueryButton = ({ dispatch }) => (
-  <button onClick={ () => dispatch(addQuery()) }>+</button>
+  <button className="add-query-button" onClick={ () => dispatch(addQuery()) }>
+    Add song
+  </button>
 )
 
 export default connect()(AddQueryButton)

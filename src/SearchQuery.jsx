@@ -4,13 +4,15 @@ import { changeQuery, deleteQuery, toggleQueryLock } from './actions'
 
 const QueryField = ({ name, value, onChange, toggleLock }) => (
   <div className="query-field">
-    <button className={ value.lockLeft ? 'locked' : 'unlocked' }
+    <button className={ 'lock-button ' +
+                        (value.lockLeft ? 'locked' : 'unlocked') }
             onClick={ toggleLock(name, 'left') }>
       L
     </button>
     <input type="text" placeholder={ name } value={ value.text }
            onChange={ onChange }/>
-    <button className={ value.lockRight ? 'locked' : 'unlocked' }
+    <button className={ 'lock-button ' +
+                        (value.lockRight ? 'locked' : 'unlocked') }
             onClick={ toggleLock(name, 'right') }>
       L
     </button>
@@ -36,7 +38,8 @@ class SearchQuery extends Component {
     }
 
     if (this.props.deletable) {
-      return <button onClick={ submitDelete.bind(this) }>&times;</button>
+      return <button className="delete-query-button"
+                     onClick={ submitDelete.bind(this) }>&times;</button>
     }
   }
 

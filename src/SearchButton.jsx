@@ -37,7 +37,10 @@ class SearchButton extends Component {
 
   render() {
     return (
-      <button onClick={ this.handleSubmit.bind(this) }>Search</button>
+      <button className="search-button"
+              onClick={ this.handleSubmit.bind(this) }>
+        Search
+      </button>
     )
   }
 }
