@@ -92,34 +92,30 @@ const lineChartPoints = (points, zeroPlays) => {
   )).join(' ')
 }
 
-const LineChart = ({ points, strokeWidth }) => (
-  <polyline fill="orange" stroke="orange"
+const LineChart = ({ fill, points, strokeWidth }) => (
+  <polyline fill={ fill } stroke={ fill }
             strokeWidth={ strokeWidth }
             points={ points } />
 )
 
-const ScatterPlot = ({ points, strokeWidth, onClick }) => {
+const ScatterPlot = ({ fill, onClick, points, strokeWidth }) => {
   const r = strokeWidth * 3
 
   return (
     <g>
       { points.map(([x, y, songs], index) => (
-          <circle cx={ x } cy={ y } r={ r } fill="red" key={ index }
+          <circle cx={ x } cy={ y } r={ r } fill={ fill } key={ index }
                   onClick={ () => onClick(songs) } />
         ))}
     </g>
   )
 }
 
-const getMaxCount = (groups) => {
-  let maxCount = 0
-
-  for (let group of groups) {
-    maxCount = Math.max(matchesFromGroup(group).length, maxCount)
-  }
-
-  return maxCount
-}
+const getMaxCount = (groups) => (
+  Math.max.apply(null, groups.map((group) => (
+    matchesFromGroup(group).length
+  )))
+)
 
 const SongChart = ({ selectedGroup, songSets, dispatch }) => {
   if (songSets.length === 0) return <h1>Empty !</h1>
@@ -150,9 +146,9 @@ const SongChart = ({ selectedGroup, songSets, dispatch }) => {
            preserveAspectRatio="none">
         <Axes xMargin={ xMargin } daysInChart={ dayRange }
               strokeWidth={ strokeWidth } />
-        <LineChart points={ lineChartPoints(points, zeroPlays) }
+        <LineChart points={ lineChartPoints(points, zeroPlays) } fill="orange"
                    strokeWidth={ strokeWidth } />
-        <ScatterPlot points={ points } strokeWidth={ strokeWidth }
+        <ScatterPlot points={ points } strokeWidth={ strokeWidth } fill="red"
                      onClick={ (songs) => dispatch(selectGroup(songs)) } />
       </svg>
     </div>
