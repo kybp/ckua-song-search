@@ -1,5 +1,6 @@
 import React from 'react'
 import { connect } from 'react-redux'
+import { selectGroup } from './actions'
 
 const dateDaysAfter = (date, delta) => (
   new Date(date.getFullYear(), date.getMonth(), date.getDate() + delta)
@@ -15,7 +16,7 @@ const matchesFromGroup = (group) => group[1]
 const groupByDate = (songSets) => {
   if (songSets.length === 0) return []
 
-  const groups = [[new Date(songSets[0][0].started), songSets[0]]]
+  const groups = [[new Date(songSets[0][0].started), songSets[0].slice()]]
 
   for (let i = 1; i < songSets.length; ++i) {
     const lastGroup   = groups[groups.length - 1]
@@ -23,9 +24,9 @@ const groupByDate = (songSets) => {
     const thisStarted = new Date(songSets[i][0].started)
 
     if (onSameDay(thisStarted, lastStarted)) {
-      matchesFromGroup(lastGroup).push(songSets[i])
+      Array.prototype.push.apply(matchesFromGroup(lastGroup), songSets[i])
     } else {
-      groups.push([thisStarted, songSets[i]])
+      groups.push([thisStarted, songSets[i].slice()])
     }
   }
 
@@ -81,7 +82,7 @@ const pointsFromGroups = (groups, xMargin, maxCount, daysInChart) => {
   return groups.map(([started, songs]) => {
     const x = xMargin + xSpread + numberOfDaysBetween(start, started)
     const y = getY(songs.length, maxCount, daysInChart)
-    return [x, y]
+    return [x, y, songs]
   })
 }
 
@@ -97,13 +98,14 @@ const LineChart = ({ points, strokeWidth }) => (
             points={ points } />
 )
 
-const ScatterPlot = ({ points, strokeWidth }) => {
+const ScatterPlot = ({ points, strokeWidth, onClick }) => {
   const r = strokeWidth * 3
 
   return (
     <g>
-      { points.map(([x, y], index) => (
-          <circle cx={ x } cy={ y } r={ r } fill="red" key={ index } />
+      { points.map(([x, y, songs], index) => (
+          <circle cx={ x } cy={ y } r={ r } fill="red" key={ index }
+                  onClick={ () => onClick(songs) } />
         ))}
     </g>
   )
@@ -119,7 +121,7 @@ const getMaxCount = (groups) => {
   return maxCount
 }
 
-const SongChart = ({ songSets }) => {
+const SongChart = ({ selectedGroup, songSets, dispatch }) => {
   if (songSets.length === 0) return <h1>Empty !</h1>
 
   const groups       = groupByDate(songSets)
@@ -139,6 +141,9 @@ const SongChart = ({ songSets }) => {
       </h2>
       <h2>Total plays: { songSets.length }</h2>
       <h2>Max plays in one day: { maxCount }</h2>
+
+      <GroupTable group={ selectedGroup } />
+
       <svg style={{ backgroundColor: 'lightblue', width: 700, height: 700 }}
            viewBox={ `0 0 ${dayRange + xMargin + xSpread * 2} ` +
                      (dayRange + yMargin) }
@@ -147,53 +152,56 @@ const SongChart = ({ songSets }) => {
               strokeWidth={ strokeWidth } />
         <LineChart points={ lineChartPoints(points, zeroPlays) }
                    strokeWidth={ strokeWidth } />
-        <ScatterPlot points={ points } strokeWidth={ strokeWidth } />
+        <ScatterPlot points={ points } strokeWidth={ strokeWidth }
+                     onClick={ (songs) => dispatch(selectGroup(songs)) } />
       </svg>
     </div>
   )
 }
 
-const SongTable = ({ songSets }) => (
-  <table>
-    <thead>
-      <tr>
-        <th>Artist</th>
-        <th>Title</th>
-        <th>Album</th>
-        <th>Played At</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr><td colSpan="4"></td></tr>
-      { songSets.map((songSet, setIndex) => (
-          songSet.map((song, songIndex) => ([
-            <tr key={ `song-${setIndex}-${songIndex}` }>
-              <td>{ song.artist }</td>
-              <td>{ song.title }</td>
-              <td>{ song.album }</td>
+const GroupTable = ({ group }) => {
+  if (group === null) return null
+
+  return (
+    <table>
+      <thead>
+        <tr>
+          <th>Artist</th>
+          <th>Title</th>
+          <th>Album</th>
+          <th>Played At</th>
+        </tr>
+      </thead>
+      <tbody>
+        { group.map((song, index) => (
+            <tr key={ index }>
+              <td>{ song.artist  }</td>
+              <td>{ song.title   }</td>
+              <td>{ song.album   }</td>
               <td>{ song.started }</td>
-            </tr>,
-            songIndex + 1 === songSet.length
-            ? <tr className="empty-row"><td colSpan="4"></td></tr>
-            : null
-          ]))
-        ))}
-    </tbody>
-  </table>
-)
+            </tr>
+          ))
+        }
+      </tbody>
+    </table>
+  )
+}
 
 const LoadingDisplay = () => <h1>Loading...</h1>
 
-const SongDisplay = ({ loadingSongs, songSets }) => {
+const SongDisplay = ({ loadingSongs, selectedGroup, songSets, dispatch }) => {
   if (loadingSongs) {
     return <LoadingDisplay />
   } else {
-    return <SongChart songSets={ songSets }/>
+    return (
+      <SongChart songSets={ songSets } selectedGroup={ selectedGroup }
+                 dispatch={ dispatch } />
+    )
   }
 }
 
-const mapStateToProps = ({ loadingSongs, songSets }) => ({
-  loadingSongs, songSets
+const mapStateToProps = ({ loadingSongs, selectedGroup, songSets }) => ({
+  loadingSongs, selectedGroup, songSets
 })
 
 export default connect(mapStateToProps)(SongDisplay)

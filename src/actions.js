@@ -13,6 +13,8 @@ export const SET_START_DATE = 'SET_START_DATE'
 export const SET_END_DATE   = 'SET_END_DATE'
 export const INVALID_DATE   = 'INVALID_DATE'
 
+export const SELECT_GROUP = 'SELECT_GROUP'
+
 let queryId = 1
 
 export const addQuery = (object) => Object.assign({}, object, {
@@ -60,4 +62,9 @@ export const setStartDate = (date) => ({
 export const setEndDate = (date) => ({
   type: SET_END_DATE,
   date
+})
+
+export const selectGroup = (group) => ({
+  type: SELECT_GROUP,
+  group
 })
