@@ -40,8 +40,8 @@ def get_search_parameters(query_string):
     fields     = ['artist', 'title', 'album']
     queries    = []
     query      = {}
-    start_date = ''
-    end_date   = ''
+    start_date = None
+    end_date   = None
 
     for query_param in query_string.split('&'):
         param_name, value = query_param.split('=')
