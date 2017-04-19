@@ -1,6 +1,7 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import { selectGroup } from './actions'
+import { beginning } from '.'
 
 const dateDaysAfter = (date, delta) => (
   new Date(date.getFullYear(), date.getMonth(), date.getDate() + delta)
@@ -38,35 +39,16 @@ const numberOfDaysBetween = (date1, date2) => {
   return (date2.getTime() - date1.getTime()) / msPerDay
 }
 
-const getStartAndEnd = (groups) => {
-  const start = startedFromGroup(groups[groups.length - 1])
-  const end   = startedFromGroup(groups[0])
-
-  if (numberOfDaysBetween(start, end) === 0) {
-    return [dateDaysAfter(start, -1), dateDaysAfter(end, 1)]
-  } else {
-    return [start, end]
-  }
-}
-
 const Axes = ({ xMargin, daysInChart, strokeWidth }) => (
   <g>
-    <line stroke="black" strokeWidth={ strokeWidth }
+    <line className="axis" strokeWidth={ strokeWidth }
           x1={ xMargin }               y1="0"
           x2={ xMargin }               y2={ daysInChart } />
-    <line stroke="black" strokeWidth={ strokeWidth }
+    <line className="axis" strokeWidth={ strokeWidth }
           x1={ xMargin }               y1={ daysInChart }
           x2={ daysInChart + xMargin } y2={ daysInChart } />
   </g>
 )
-
-/**
- * The omount of 'spread' to add around each side of a point on the chart to
- * smooth the line chart. The X coordinate as calculated is used as a base
- * point xSpread to the left, the point itself is drawn at x + xSpread, and the
- * line is drawn to another base point xSpread to the right.
- */
-const xSpread = 0.1
 
 /**
  * Return the Y coordinate to chart for the given songCount, scaled
@@ -76,35 +58,26 @@ const getY = (songCount, maxCount, daysInChart) => {
   return daysInChart - songCount * daysInChart / (maxCount + 1)
 }
 
-const pointsFromGroups = (groups, xMargin, maxCount, daysInChart) => {
-  const [start, _] = getStartAndEnd(groups)
-
+const pointsFromGroups = (groups, xMargin, maxCount, daysInChart, dates) => {
   return groups.map(([started, songs]) => {
-    const x = xMargin + xSpread + numberOfDaysBetween(start, started)
+    const x = xMargin + numberOfDaysBetween(dates.startDate, started)
     const y = getY(songs.length, maxCount, daysInChart)
     return [x, y, songs]
   })
 }
 
-const lineChartPoints = (points, zeroPlays) => {
-  return points.map(([x, y]) => (
-    `${x - xSpread},${zeroPlays} ${x},${y} ${x + xSpread},${zeroPlays}`
-  )).join(' ')
-}
-
-const LineChart = ({ fill, points, strokeWidth }) => (
-  <polyline fill={ fill } stroke={ fill }
-            strokeWidth={ strokeWidth }
-            points={ points } />
+const LineChart = ({ dates, points, strokeWidth }) => (
+  <polyline points={ points.map(([x, y]) => `${x},${y}`).join(' ') }
+            strokeWidth={ strokeWidth } />
 )
 
-const ScatterPlot = ({ fill, onClick, points, strokeWidth }) => {
+const ScatterPlot = ({ onClick, points, strokeWidth }) => {
   const r = strokeWidth * 3
 
   return (
     <g>
       { points.map(([x, y, songs], index) => (
-          <circle cx={ x } cy={ y } r={ r } fill={ fill } key={ index }
+          <circle cx={ x } cy={ y } r={ r } key={ index }
                   onClick={ () => onClick(songs) } />
         ))}
     </g>
@@ -117,40 +90,38 @@ const getMaxCount = (groups) => (
   )))
 )
 
-const SongChart = ({ selectedGroup, songSets, dispatch }) => {
+const SongChart = ({ dates, selectedGroup, songSets, dispatch }) => {
   if (songSets.length === 0) return <h1>Empty !</h1>
 
-  const groups       = groupByDate(songSets)
-  const [start, end] = getStartAndEnd(groups)
-  const dayRange     = numberOfDaysBetween(start, end)
-  const xMargin      = dayRange / 20
-  const yMargin      = dayRange / 10
-  const strokeWidth  = dayRange / 365 / 1.5
-  const maxCount     = getMaxCount(groups)
-  const zeroPlays    = getY(0, maxCount, dayRange)
-  const points       = pointsFromGroups(groups, xMargin, maxCount, dayRange)
+  const groups      = groupByDate(songSets)
+  const dayRange    = numberOfDaysBetween(dates.startDate, dates.endDate)
+  const xMargin     = dayRange / 20
+  const yMargin     = dayRange / 10
+  const strokeWidth = dayRange / 365 / 1.5
+  const maxCount    = getMaxCount(groups)
+  const points      =
+        pointsFromGroups(groups, xMargin, maxCount, dayRange, dates)
 
   return (
     <div>
       <h2>
-        Charting from { start.toString() } to { end.toString() }
+        Charting
+        from { dates.startDate.toString() } to { dates.endDate.toString() }
       </h2>
       <h2>Total plays: { songSets.length }</h2>
       <h2>Max plays in one day: { maxCount }</h2>
 
-      <GroupTable group={ selectedGroup } />
-
-      <svg style={{ backgroundColor: 'lightblue', width: 700, height: 700 }}
-           viewBox={ `0 0 ${dayRange + xMargin + xSpread * 2} ` +
+      <svg viewBox={ `0 0 ${dayRange + xMargin * 2} ` +
                      (dayRange + yMargin) }
            preserveAspectRatio="none">
         <Axes xMargin={ xMargin } daysInChart={ dayRange }
               strokeWidth={ strokeWidth } />
-        <LineChart points={ lineChartPoints(points, zeroPlays) } fill="orange"
-                   strokeWidth={ strokeWidth } />
-        <ScatterPlot points={ points } strokeWidth={ strokeWidth } fill="red"
+        <LineChart points={ points } strokeWidth={ strokeWidth } />
+        <ScatterPlot points={ points } strokeWidth={ strokeWidth }
                      onClick={ (songs) => dispatch(selectGroup(songs)) } />
       </svg>
+
+      <GroupTable group={ selectedGroup } />
     </div>
   )
 }
@@ -185,19 +156,26 @@ const GroupTable = ({ group }) => {
 
 const LoadingDisplay = () => <h1>Loading...</h1>
 
-const SongDisplay = ({ loadingSongs, selectedGroup, songSets, dispatch }) => {
+const SongDisplay = ({
+  dates, loadingSongs, selectedGroup, songSets, dispatch
+}) => {
   if (loadingSongs) {
     return <LoadingDisplay />
   } else {
     return (
       <SongChart songSets={ songSets } selectedGroup={ selectedGroup }
-                 dispatch={ dispatch } />
+                 dispatch={ dispatch } dates={ dates } />
     )
   }
 }
 
-const mapStateToProps = ({ loadingSongs, selectedGroup, songSets }) => ({
-  loadingSongs, selectedGroup, songSets
+const mapStateToProps = ({
+  dates, loadingSongs, selectedGroup, songSets
+}) => ({
+  dates: {
+    startDate: dates.startDate ? new Date(dates.startDate) : beginning,
+    endDate:   dates.endDate   ? new Date(dates.endDate)   : new Date()
+  }, loadingSongs, selectedGroup, songSets
 })
 
 export default connect(mapStateToProps)(SongDisplay)

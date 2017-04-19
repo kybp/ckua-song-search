@@ -6,6 +6,7 @@ import 'pickadate/lib/picker.date'
 import 'pickadate/lib/themes/default.css'
 import 'pickadate/lib/themes/default.date.css'
 import { INVALID_DATE } from './actions'
+import { beginning } from '.'
 
 const format = 'yyyy-mm-dd'
 
@@ -14,7 +15,7 @@ class DateSelector extends Component {
     const component = this
 
     $(findDOMNode(this.refs.datepicker)).pickadate({
-      min:          new Date(2014, 6, 5),
+      min:          beginning,
       max:          -1,
       today:        false,
       format:       format,

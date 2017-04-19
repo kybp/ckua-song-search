@@ -6,6 +6,8 @@ import SearchForm from './SearchForm'
 import SongDisplay from './SongDisplay'
 import reducer from './reducers'
 
+export const beginning = new Date(2014, 6, 5)
+
 render(
   <Provider store={ createStore(reducer) }>
     <div>
