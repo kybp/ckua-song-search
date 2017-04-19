@@ -131,11 +131,11 @@ def check_song(song, query):
 
 def validate_queries(queries):
     minimum_term_length = 3
-    long_enough = lambda value: len(value) < minimum_term_length
+    long_enough = lambda value: len(value['text']) < minimum_term_length
     if all(map(long_enough, queries[0].values())):
         return {'error': 'At least one search field per query must ' +
                          'have at least {} characters'.format(
-                             minimum_term_length)}
+                             minimum_term_length) }
 
 @app.route('/search')
 def search():
