@@ -3,12 +3,10 @@ import { connect } from 'react-redux'
 import { selectGroup } from './actions'
 import { beginning } from '.'
 
-const dateDaysAfter = (date, delta) => (
-  new Date(date.getFullYear(), date.getMonth(), date.getDate() + delta)
-)
-
 const onSameDay = (date, otherDate) => (
-  otherDate >= dateDaysAfter(date, 0) && otherDate < dateDaysAfter(date, 1)
+  date.getFullYear() === otherDate.getFullYear() &&
+    date.getMonth() === otherDate.getMonth() &&
+    date.getDate() === otherDate.getDate()
 )
 
 const startedFromGroup = (group) => group[0]
