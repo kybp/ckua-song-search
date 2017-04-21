@@ -93,8 +93,8 @@ const SongChart = ({ dates, selectedGroup, songSets, dispatch }) => {
 
   const groups      = groupByDate(songSets)
   const dayRange    = numberOfDaysBetween(dates.startDate, dates.endDate)
-  const xMargin     = dayRange / 20
-  const yMargin     = dayRange / 10
+  const xMargin     = dayRange / 40
+  const yMargin     = dayRange / 20
   const strokeWidth = dayRange / 365 / 1.5
   const maxCount    = getMaxCount(groups)
   const points      =
@@ -102,55 +102,45 @@ const SongChart = ({ dates, selectedGroup, songSets, dispatch }) => {
 
   return (
     <div>
-      <h2>
-        Charting
-        from { dates.startDate.toString() } to { dates.endDate.toString() }
-      </h2>
-      <h2>Total plays: { songSets.length }</h2>
-      <h2>Max plays in one day: { maxCount }</h2>
+      <div className="results-info">
+        <span>Total plays in range: { songSets.length }</span>
+        <span>Max plays in one day: { maxCount }</span>
+      </div>
 
-      <svg viewBox={ `0 0 ${dayRange + xMargin * 2} ` +
-                     (dayRange + yMargin) }
-           preserveAspectRatio="none">
-        <Axes xMargin={ xMargin } daysInChart={ dayRange }
-              strokeWidth={ strokeWidth } />
-        <LineChart points={ points } strokeWidth={ strokeWidth } />
-        <ScatterPlot points={ points } strokeWidth={ strokeWidth }
-                     onClick={ (songs) => dispatch(selectGroup(songs)) } />
-      </svg>
+      <div className="results">
+        <svg viewBox={ `0 0 ${dayRange + xMargin * 2} ${dayRange + yMargin}` }
+             preserveAspectRatio="none">
+          <Axes xMargin={ xMargin } daysInChart={ dayRange }
+                strokeWidth={ strokeWidth } />
+          <LineChart points={ points } strokeWidth={ strokeWidth } />
+          <ScatterPlot points={ points } strokeWidth={ strokeWidth }
+                       onClick={ (songs) => dispatch(selectGroup(songs)) } />
+        </svg>
 
-      <GroupTable group={ selectedGroup } />
+        <MatchDetail group={ selectedGroup } />
+      </div>
     </div>
   )
 }
 
-const GroupTable = ({ group }) => {
-  if (group === null) return null
+const formatDate = (date) => (
+  date.toLocaleDateString() + ' ' + date.toLocaleTimeString()
+)
 
-  return (
-    <table>
-      <thead>
-        <tr>
-          <th>Artist</th>
-          <th>Title</th>
-          <th>Album</th>
-          <th>Played At</th>
-        </tr>
-      </thead>
-      <tbody>
-        { group.map((song, index) => (
-            <tr key={ index }>
-              <td>{ song.artist  }</td>
-              <td>{ song.title   }</td>
-              <td>{ song.album   }</td>
-              <td>{ song.started }</td>
-            </tr>
-          ))
-        }
-      </tbody>
-    </table>
-  )
-}
+const MatchDetail = ({ group }) => (
+  <ul className="song-list">
+    { group.map((song, index) => (
+        <li className="song-detail" key={ index }>
+          <div className="row">
+            <span>{ song.artist }</span>
+            <span>{ formatDate(new Date(song.started)) }</span>
+          </div>
+          <span>{ song.title }</span>
+          <span>{ song.album }</span>
+        </li>
+    ))}
+  </ul>
+)
 
 const LoadingDisplay = () => <h1>Loading...</h1>
 
@@ -173,7 +163,9 @@ const mapStateToProps = ({
   dates: {
     startDate: dates.startDate ? new Date(dates.startDate) : beginning,
     endDate:   dates.endDate   ? new Date(dates.endDate)   : new Date()
-  }, loadingSongs, selectedGroup, songSets
+  },
+  selectedGroup: selectedGroup || Array.prototype.concat.apply([], songSets),
+  loadingSongs, songSets
 })
 
 export default connect(mapStateToProps)(SongDisplay)
