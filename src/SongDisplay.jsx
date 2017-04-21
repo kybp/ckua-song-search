@@ -100,8 +100,8 @@ const SongChart = ({ dates, selectedGroup, songSets, dispatch }) => {
   return (
     <div>
       <div className="results-info">
-        <span>Total plays in range: { songSets.length }</span>
-        <span>Max plays in one day: { maxCount }</span>
+        <span>Total matches in range: { songSets.length }</span>
+        <span>Max matches in one day: { maxCount }</span>
       </div>
 
       <div className="results">
