@@ -3,7 +3,8 @@ from urllib.parse import unquote
 from flask import Flask, jsonify, request
 from flask.json import JSONEncoder
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import func, text
+from pytz import timezone, UTC
+from sqlalchemy import text
 
 app = Flask(__name__, static_folder='dist')
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgres://localhost:5432/ckua'
@@ -25,6 +26,9 @@ class Song(db.Model):
             .order_by(Song.started.asc())\
             .limit(n)
 
+def to_utc(date):
+    return timezone('Canada/Mountain').localize(date).astimezone(UTC)
+
 class JSONSongEncoder(JSONEncoder):
     def default(self, obj):
         if isinstance(obj, Song):
@@ -32,7 +36,7 @@ class JSONSongEncoder(JSONEncoder):
                 'title':   obj.title,
                 'artist':  obj.artist,
                 'album':   obj.album,
-                'started': obj.started }
+                'started': to_utc(obj.started) }
         return super(JSONSongEncoder, self).default(obj)
 app.json_encoder = JSONSongEncoder
 
