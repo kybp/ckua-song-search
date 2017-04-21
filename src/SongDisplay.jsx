@@ -37,14 +37,14 @@ const numberOfDaysBetween = (date1, date2) => {
   return (date2.getTime() - date1.getTime()) / msPerDay
 }
 
-const Axes = ({ xMargin, daysInChart, strokeWidth }) => (
+const Axes = ({ daysInChart, strokeWidth }) => (
   <g>
     <line className="axis" strokeWidth={ strokeWidth }
-          x1={ xMargin }               y1="0"
-          x2={ xMargin }               y2={ daysInChart } />
+          x1="0"             y1="0"
+          x2="0"             y2={ daysInChart } />
     <line className="axis" strokeWidth={ strokeWidth }
-          x1={ xMargin }               y1={ daysInChart }
-          x2={ daysInChart + xMargin } y2={ daysInChart } />
+          x1="0"             y1={ daysInChart }
+          x2={ daysInChart } y2={ daysInChart } />
   </g>
 )
 
@@ -56,9 +56,9 @@ const getY = (songCount, maxCount, daysInChart) => {
   return daysInChart - songCount * daysInChart / (maxCount + 1)
 }
 
-const pointsFromGroups = (groups, xMargin, maxCount, daysInChart, dates) => {
+const pointsFromGroups = (groups, maxCount, daysInChart, dates) => {
   return groups.map(([started, songs]) => {
-    const x = xMargin + numberOfDaysBetween(dates.startDate, started)
+    const x = numberOfDaysBetween(dates.startDate, started)
     const y = getY(songs.length, maxCount, daysInChart)
     return [x, y, songs]
   })
@@ -93,12 +93,9 @@ const SongChart = ({ dates, selectedGroup, songSets, dispatch }) => {
 
   const groups      = groupByDate(songSets)
   const dayRange    = numberOfDaysBetween(dates.startDate, dates.endDate)
-  const xMargin     = dayRange / 40
-  const yMargin     = dayRange / 20
   const strokeWidth = dayRange / 365 / 1.5
   const maxCount    = getMaxCount(groups)
-  const points      =
-        pointsFromGroups(groups, xMargin, maxCount, dayRange, dates)
+  const points      = pointsFromGroups(groups, maxCount, dayRange, dates)
 
   return (
     <div>
@@ -108,10 +105,9 @@ const SongChart = ({ dates, selectedGroup, songSets, dispatch }) => {
       </div>
 
       <div className="results">
-        <svg viewBox={ `0 0 ${dayRange + xMargin * 2} ${dayRange + yMargin}` }
+        <svg viewBox={ `0 0 ${dayRange} ${dayRange}` }
              preserveAspectRatio="none">
-          <Axes xMargin={ xMargin } daysInChart={ dayRange }
-                strokeWidth={ strokeWidth } />
+          <Axes daysInChart={ dayRange } strokeWidth={ strokeWidth } />
           <LineChart points={ points } strokeWidth={ strokeWidth } />
           <ScatterPlot points={ points } strokeWidth={ strokeWidth }
                        onClick={ (songs) => dispatch(selectGroup(songs)) } />
