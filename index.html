@@ -7,32 +7,48 @@
        background-color: #333;
        color:            #fff;
        font-family:      helvetica, sans;
-       font-size:        1.5em;
+       font-size:        12pt;
+       margin:           20px 40px;
      }
 
-     table, th, td {
-       border:          1px solid black;
-       border-collapse: collapse;
-       padding:         10px;
+     header {
+       display: flex;
+     }
+
+     .info {
+       flex:             1;
+       padding-top:      10px;
+       margin-right:     20px;
+       background-color: #292929;
+       border:           3px solid #ccf;
+       border-radius:    2px;
+     }
+
+     .info .title {
+       font-size: 2em;
+       color:     #fc0;
+       padding:   0px 20px;
+     }
+
+     .info p {
+       margin:  20px;
+       padding: 0px 20px;
      }
 
      .search-form {
-       width:          55%;
+       flex:           2;
        display:        flex;
        flex-direction: column;
      }
 
      .range-selector {
        display:         flex;
-       justify-content: space-between;
-     }
-
-     .date-selector {
-       display: inline-block;
+       justify-content: space-around;
      }
 
      .query-form {
        display:         flex;
+       flex-wrap:       wrap;
        justify-content: space-between;
      }
 
@@ -96,7 +112,8 @@
      }
 
      circle {
-       fill: #f90;
+       fill:   #f90;
+       cursor: pointer;
      }
 
      line {
@@ -109,11 +126,8 @@
 
      .song-list {
        flex:       1;
+       margin:     0px;
        overflow-y: auto;
-     }
-
-     .song-detail:last-child {
-       margin-bottom: 15px;
      }
 
      .song-detail {
@@ -146,7 +160,7 @@
      }
 
      .results {
-       height:  400px;
+       height:  200px;
        display: flex;
        background-color: #292929;
        padding: 15px 20px;
