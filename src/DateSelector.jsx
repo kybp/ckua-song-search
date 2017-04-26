@@ -44,7 +44,8 @@ class DateSelector extends Component {
     return (
       <div className="date-selector">
         <label>{ this.props.label }</label>
-        <input type="date" ref="datepicker" value={ this.props.value } />
+        <input type="date" ref="datepicker" readOnly="true"
+               value={ this.props.value } />
       </div>
     )
   }

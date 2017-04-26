@@ -1,4 +1,5 @@
 import { SET_START_DATE, SET_END_DATE } from '../actions'
+import { RESET_DATES } from '../actions'
 import { INVALID_DATE } from '../actions'
 
 const initialState = {
@@ -22,6 +23,8 @@ export default (state = initialState, action) => {
     } else {
       return Object.assign({}, state, { endDate: INVALID_DATE })
     }
+  case RESET_DATES:
+    return initialState
   default:
     return state
   }

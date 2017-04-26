@@ -11,6 +11,7 @@ export const FINISH_LOADING_SONGS = 'FINISH_LOADING_SONGS'
 
 export const SET_START_DATE = 'SET_START_DATE'
 export const SET_END_DATE   = 'SET_END_DATE'
+export const RESET_DATES    = 'RESET_DATES'
 export const INVALID_DATE   = 'INVALID_DATE'
 
 export const SELECT_GROUP = 'SELECT_GROUP'
@@ -35,6 +36,10 @@ export const deleteQuery = (id) => ({
 export const toggleQueryLock = (id, field, side) => ({
   type: TOGGLE_QUERY_LOCK,
   id, field, side
+})
+
+export const resetQueries = () => ({
+  type: RESET_QUERIES
 })
 
 export const addSongSets = (songs) => ({
@@ -62,6 +67,10 @@ export const setStartDate = (date) => ({
 export const setEndDate = (date) => ({
   type: SET_END_DATE,
   date
+})
+
+export const resetDates = () => ({
+  type: RESET_DATES
 })
 
 export const selectGroup = (group) => ({

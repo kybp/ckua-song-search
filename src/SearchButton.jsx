@@ -2,38 +2,32 @@ import React, { Component } from 'react'
 import { connect } from 'react-redux'
 import { addSongSets, resetSongSets } from './actions'
 import { startLoadingSongs, finishLoadingSongs } from './actions'
+import { getQueryString } from '.'
+
+export const submitSearch = (state, dispatch) => {
+  dispatch(startLoadingSongs())
+
+  const xhr = new XMLHttpRequest()
+  xhr.onreadystatechange = () => {
+    if (xhr.readyState === 4) {
+      if (xhr.status === 200) {
+        dispatch(resetSongSets())
+        dispatch(addSongSets(JSON.parse(xhr.response)))
+        dispatch(finishLoadingSongs())
+      } else {
+        alert(json.error)
+      }
+    }
+  }
+  xhr.open('GET', `http://localhost:5000/search?${getQueryString(state)}`)
+  xhr.send()
+}
 
 class SearchButton extends Component {
   handleSubmit() {
-    const queryString = this.props.queries.map((query) => (
-      Object
-        .keys(query)
-        .filter((key) => key === 'id' || query[key].text)
-        .map((key) => {
-          if (key === 'id') return `${key}=${query[key]}`
-          else if (query[key].text) return (
-            `${key}=${encodeURIComponent(query[key].text)}&` +
-            `${key}-lockLeft=${query[key].lockLeft}&` +
-            `${key}-lockRight=${query[key].lockRight}`)
-        }).join('&')
-    )).join('&') + `&start=${this.props.startDate}&end=${this.props.endDate}`
-
-    this.props.dispatch(startLoadingSongs())
-    const xhr = new XMLHttpRequest()
-    xhr.onreadystatechange = () => {
-      if (xhr.readyState === 4) {
-        this.props.dispatch(finishLoadingSongs())
-        const json = JSON.parse(xhr.response)
-        if (xhr.status === 200) {
-          this.props.dispatch(resetSongSets())
-          this.props.dispatch(addSongSets(json))
-        } else {
-          alert(json.error)
-        }
-      }
-    }
-    xhr.open('GET', 'http://localhost:5000/search?' + queryString)
-    xhr.send()
+    const { queries, songSets, startDate, endDate } = this.props
+    submitSearch({ queries, songSets, startDate, endDate },
+                 this.props.dispatch)
   }
 
   render() {
@@ -46,10 +40,10 @@ class SearchButton extends Component {
   }
 }
 
-const mapStateToProps = ({ queries, dates }) => ({
+const mapStateToProps = ({ dates, queries, songSets }) => ({
   startDate: dates.startDate,
   endDate:   dates.endDate,
-  queries
+  queries, songSets
 })
 
 export default connect(mapStateToProps)(SearchButton)

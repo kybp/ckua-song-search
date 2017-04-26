@@ -1,6 +1,7 @@
 import { assert } from 'chai'
 import { setStartDate, SET_START_DATE } from '../actions'
 import { setEndDate,   SET_END_DATE   } from '../actions'
+import { resetDates,   RESET_DATES    } from '../actions'
 import { INVALID_DATE } from '../actions'
 import reducer from './dates'
 
@@ -112,6 +113,15 @@ describe('dates reducer', () => {
         const updated    = reducer(initial, setEndDate(newEndDate))
         assert.strictEqual(updated.endDate, INVALID_DATE)
       })
+    })
+  })
+
+  describe(RESET_DATES, () => {
+    it('resets the state to its initial value', () => {
+      const initial  = reducer(undefined, { type: 'INIT' })
+      const datesSet = { startDate: '2016-01-01', endDate: '2016-02-02' }
+      const updated  = reducer(datesSet, resetDates())
+      assert.deepEqual(updated, initial)
     })
   })
 })

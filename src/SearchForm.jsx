@@ -4,64 +4,29 @@ import AddQueryButton from './AddQueryButton'
 import DateSelector from './DateSelector'
 import SearchButton from './SearchButton'
 import SearchQuery from './SearchQuery'
-import { addQuery, setStartDate, setEndDate } from './actions'
+import { setStartDate, setEndDate } from './actions'
 
-class SearchForm extends Component {
-  componentWillMount() {
-    const queryParams = window.location.search.substring(1).split('&')
-    let songQuery = {}
-
-    const saveQuery = () => {
-      this.props.dispatch(addQuery(songQuery))
-      songQuery = {}
-    }
-
-    for (let i = 0; i < queryParams.length; ++i) {
-      const [paramName, value] = queryParams[i].split('=')
-      if (paramName in songQuery) {
-        saveQuery()
-      }
-      if (['artist', 'title', 'album'].includes(paramName)) {
-        songQuery[paramName] = decodeURIComponent(value)
-      }
-    }
-
-    // This is either the left-over data from the last-parsed song query, or an
-    // empty initial song query
-    saveQuery()
-  }
-
-  render() {
-    return (
-      <div className="search-form">
-        <div className="range-selector">
-          <DateSelector
-              label="Start date"
-              value={ this.props.startDate }
-              onSelect={ (date) => {
-                  this.props.dispatch(setStartDate(date))
-                }} />
-          <DateSelector
-              label="End date"
-              value={ this.props.endDate }
-              onSelect={ (date) => {
-                  this.props.dispatch(setEndDate(date))
-                }} />
+const SearchForm = ({ queries, startDate, endDate, dispatch }) => (
+  <div className="search-form">
+    <div className="range-selector">
+      <DateSelector
+          label="Start date" value={ startDate }
+          onSelect={ (date) => dispatch(setStartDate(date)) } />
+      <DateSelector
+          label="End date" value={ endDate }
+          onSelect={ (date) => dispatch(setEndDate(date)) } />
+    </div>
+    { queries.map((query, index) => (
+        <div key={ query.id }>
+          <SearchQuery deletable={ queries.length > 1 } queryId={ query.id } />
         </div>
-        { this.props.queries.map((query, index) => (
-            <div key={ query.id }>
-              <SearchQuery deletable={ this.props.queries.length > 1 }
-                           queryId={ query.id } />
-            </div>
-          )) }
-        <div className="controls">
-          <AddQueryButton />
-          <SearchButton   />
-        </div>
-      </div>
-    )
-  }
-}
+      )) }
+    <div className="controls">
+      <AddQueryButton />
+      <SearchButton   />
+    </div>
+  </div>
+)
 
 const mapStateToProps = ({ queries, dates }) => ({
   startDate: dates.startDate,

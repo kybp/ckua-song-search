@@ -31,7 +31,9 @@ const lock = (side) => {
   return 'lock' + capitalize(side)
 }
 
-export default (state = [], action) => {
+const initialState = []
+
+export default (state = initialState, action) => {
   switch (action.type) {
   case ADD_QUERY:
     return state.concat(queryFromAction(action))
