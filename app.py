@@ -40,40 +40,80 @@ class JSONSongEncoder(JSONEncoder):
         return super(JSONSongEncoder, self).default(obj)
 app.json_encoder = JSONSongEncoder
 
-def get_search_parameters(query_string):
-    fields     = ['artist', 'title', 'album']
-    queries    = []
-    query      = {}
+def split_param(query_param):
+    param_name, value = query_param.split('=')
+    return param_name, unquote(value)
+
+def split_queries(query_string):
+    '''Split a query string into an array of dicts for each query. A new query
+object is indicated in the query string by an 'id' parameter. This function
+does no parsing or validating of the fields listed after 'id' parameters.'''
+    result = []
+    query  = {}
+
+    for query_param in query_string.split('&'):
+        param_name, value = split_param(query_param)
+
+        if param_name == 'start' or param_name == 'end':
+            continue
+        elif param_name == 'id':
+            if query:
+                result.append(query)
+            query = { 'id': value }
+        else:
+            query[param_name] = value
+
+    if query:
+        result.append(query)
+
+    return result
+
+def get_start_and_end(query_string):
+    '''Read the start and end dates from a query string and return a tuple.
+Each date will be a datetime object if it was present, or None if it wasn't.'''
     start_date = None
     end_date   = None
 
     for query_param in query_string.split('&'):
-        param_name, value = query_param.split('=')
-        value = unquote(value)
+        param_name, value = split_param(query_param)
         if param_name == 'start' and value:
             start_date = datetime.strptime(value, '%Y-%m-%d')
         elif param_name == 'end' and value:
             end_date = datetime.strptime(value, '%Y-%m-%d')
-        if param_name in query:
-            queries.append(query)
-            query = {}
-        if param_name in fields:
-            if param_name in query:
-                query[param_name]['text'] = value
-            else:
-                query[param_name] = {'text': value}
-        for field in fields:
-            if param_name == field + '-lockLeft':
-                query[field]['lockLeft'] = (
-                    field in query and value.lower() == 'true')
-        for field in fields:
-            if param_name == field + '-lockRight':
-                query[field]['lockRight'] = (
-                    field in query and value.lower() == 'true')
 
-    if query:
-        queries.append(query)
+    return start_date, end_date
 
+def try_read_lock(parsed_query, unparsed_query, key, field, side):
+    lock_name = 'lock' + side
+
+    if key == field + '-' + lock_name:
+        parsed_query[field][lock_name] = unparsed_query[key].lower() == 'true'
+        return True
+
+    return False
+
+def parse_query(unparsed_query):
+    fields = ['artist', 'title', 'album']
+    parsed_query = { field: { 'text': '' } for field in fields}
+    parsed_query['id'] = unparsed_query['id']
+
+    for key in unparsed_query.keys():
+        if key in fields:
+            parsed_query[key]['text'] = unparsed_query[key]
+            continue
+        for field in fields:
+            if try_read_lock(parsed_query, unparsed_query,
+                             key, field, 'Left'):
+                break
+            elif try_read_lock(parsed_query, unparsed_query,
+                               key, field, 'Right'):
+                break
+
+    return parsed_query
+
+def get_search_parameters(query_string):
+    queries = [parse_query(query) for query in split_queries(query_string)]
+    start_date, end_date = get_start_and_end(query_string)
     return {
         'queries':    queries,
         'start_date': start_date,
@@ -135,11 +175,17 @@ def check_song(song, query):
 
 def validate_queries(queries):
     minimum_term_length = 3
-    long_enough = lambda value: len(value['text']) < minimum_term_length
-    if all(map(long_enough, queries[0].values())):
-        return {'error': 'At least one search field per query must ' +
-                         'have at least {} characters'.format(
-                             minimum_term_length) }
+    def not_long_enough(value):
+        if not isinstance(value, dict):
+            return True
+        elif 'text' not in value:
+            return False
+        else:
+            return len(value['text']) < minimum_term_length
+    error_message = 'At least one search field per query must ' +\
+                    'have at least {} characters'.format(minimum_term_length)
+    if all(map(not_long_enough, queries[0].values())):
+        return {'error': error_message }
 
 @app.route('/search')
 def search():
