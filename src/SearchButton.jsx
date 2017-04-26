@@ -8,9 +8,10 @@ class SearchButton extends Component {
     const queryString = this.props.queries.map((query) => (
       Object
         .keys(query)
+        .filter((key) => key === 'id' || query[key].text)
         .map((key) => {
           if (key === 'id') return `${key}=${query[key]}`
-          else return (
+          else if (query[key].text) return (
             `${key}=${encodeURIComponent(query[key].text)}&` +
             `${key}-lockLeft=${query[key].lockLeft}&` +
             `${key}-lockRight=${query[key].lockRight}`)
