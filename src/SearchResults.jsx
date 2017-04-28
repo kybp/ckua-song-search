@@ -44,7 +44,7 @@ const ResultsInfo = ({ totalMatches, maxInOneDay }) => (
   </div>
 )
 
-const MatchDetail = ({ group }) => {
+const SongList = ({ group }) => {
   const formatDate = (date) => (
     date.toLocaleDateString() + ' ' + date.toLocaleTimeString()
   )
@@ -75,9 +75,9 @@ const SearchResults = ({ loadingSongs, selectedGroup, songSets }) => {
     <div>
       <ResultsInfo totalMatches={ songSets.length }
                    maxInOneDay={ maxCount } />
-      <div className="results">
+      <div className="search-results">
         <SongChart groups={ groups } maxCount={ maxCount } />
-        <MatchDetail group={ selectedGroup } />
+        <SongList group={ selectedGroup } />
       </div>
     </div>
   )

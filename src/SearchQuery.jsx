@@ -50,7 +50,7 @@ class SearchQuery extends Component {
     }
 
     return (
-      <div className="query-form">
+      <div className="search-query">
         <QueryField name="artist" value={ this.props.artist }
                     onChange={ handleChangeFor('artist') }
                     toggleLock={ toggleLock } />

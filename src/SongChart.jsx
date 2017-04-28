@@ -25,28 +25,29 @@ const pointsFromGroups = (groups, maxCount, daysInChart, dates) => {
 }
 
 const Axes = ({ daysInChart, strokeWidth }) => (
-  <g>
-    <line className="axis" strokeWidth={ strokeWidth }
+  <g className="axes">
+    <line strokeWidth={ strokeWidth }
           x1="0"             y1="0"
           x2="0"             y2={ daysInChart } />
-    <line className="axis" strokeWidth={ strokeWidth }
+    <line strokeWidth={ strokeWidth }
           x1="0"             y1={ daysInChart }
           x2={ daysInChart } y2={ daysInChart } />
   </g>
 )
 
 const LineChart = ({ dates, points, strokeWidth }) => (
-  <polyline points={ points.map(([x, y]) => `${x},${y}`).join(' ') }
-            strokeWidth={ strokeWidth } />
+  <polyline className="line-chart" strokeWidth={ strokeWidth }
+            points={ points.map(([x, y]) => `${x},${y}`).join(' ') } />
 )
 
 const ScatterPlot = ({ onClick, points, strokeWidth }) => {
   const r = strokeWidth * 3
 
   return (
-    <g>
+    <g className="scatter-plot">
       { points.map(([x, y, songs], index) => (
-          <circle cx={ x } cy={ y } r={ r } key={ index }
+          <circle className="scatter-point"
+                  cx={ x } cy={ y } r={ r } key={ index }
                   onClick={ () => onClick(songs) } />
         ))}
     </g>
@@ -60,7 +61,7 @@ const SongChart = ({ dates, dispatch, groups, maxCount }) => {
 
   return (
     <svg viewBox={ `0 0 ${daysInChart} ${daysInChart}` }
-         preserveAspectRatio="none">
+         preserveAspectRatio="none" className="song-chart">
       <Axes daysInChart={ daysInChart } strokeWidth={ strokeWidth } />
       <LineChart points={ points } strokeWidth={ strokeWidth } />
       <ScatterPlot points={ points } strokeWidth={ strokeWidth }
