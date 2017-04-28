@@ -18,7 +18,7 @@ export const getQueryString = ({ queries, startDate, endDate }) => (
           `&${key}=${encodeURIComponent(query[key].text)}&` +
           `${key}-lockLeft=${query[key].lockLeft}&` +
           `${key}-lockRight=${query[key].lockRight}`)
-      }).join('&')
+      })
     ).join('&') + `&start=${startDate}&end=${endDate}`
 )
 
