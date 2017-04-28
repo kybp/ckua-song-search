@@ -41,7 +41,7 @@ const LineChart = ({ dates, points, strokeWidth }) => (
 )
 
 const ScatterPlot = ({ onClick, points, strokeWidth }) => {
-  const r = strokeWidth * 3
+  const r = strokeWidth * 5
 
   return (
     <g className="scatter-plot">
@@ -56,7 +56,7 @@ const ScatterPlot = ({ onClick, points, strokeWidth }) => {
 
 const SongChart = ({ dates, dispatch, groups, maxCount }) => {
   const daysInChart = numberOfDaysBetween(dates.startDate, dates.endDate)
-  const strokeWidth = daysInChart / 365 / 1.5
+  const strokeWidth = daysInChart / 365
   const points      = pointsFromGroups(groups, maxCount, daysInChart, dates)
 
   return (
