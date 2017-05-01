@@ -1,5 +1,6 @@
-const webpack = require('webpack')
-const path    = require('path')
+const webpack    = require('webpack')
+const path       = require('path')
+const HtmlPlugin = require('html-webpack-plugin')
 
 const srcDir   = path.join(__dirname, 'src')
 const buildDir = path.join(__dirname, 'dist')
@@ -23,5 +24,8 @@ module.exports = {
   resolve: {
     extensions: ['.js', '.jsx'],
     alias: { picker: 'pickadate/lib/picker' }
-  }
+  },
+  plugins: [
+    new HtmlPlugin({ template: 'index.html' })
+  ]
 }
