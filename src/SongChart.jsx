@@ -42,14 +42,15 @@ const LineChart = ({ dates, points, strokeWidth }) => (
 )
 
 const ScatterPlot = ({ onClick, points, strokeWidth }) => {
-  const r = strokeWidth * 5
+  const rx = strokeWidth * 4
+  const ry = rx * 2
 
   return (
     <g className="scatter-plot">
       { points.map(([x, y, songs], index) => (
-          <circle className="scatter-point"
-                  cx={ x } cy={ y } r={ r } key={ index }
-                  onClick={ () => onClick(songs) } />
+          <ellipse className="scatter-point"
+                   cx={ x } cy={ y } rx={ rx } ry={ ry } key={ index }
+                   onClick={ () => onClick(songs) } />
         ))}
     </g>
   )
