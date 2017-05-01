@@ -1,6 +1,7 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
 import { changeQuery, deleteQuery, toggleQueryLock } from './actions'
+import './search-query.css'
 
 const QueryField = ({ name, value, onChange, toggleLock }) => (
   <div className="query-field">

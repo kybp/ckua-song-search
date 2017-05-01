@@ -1,11 +1,12 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import SongChart from './SongChart'
+import './search-results.css'
 
 const onSameDay = (date, otherDate) => (
   date.getFullYear() === otherDate.getFullYear() &&
-    date.getMonth() === otherDate.getMonth() &&
-    date.getDate() === otherDate.getDate()
+    date.getMonth()  === otherDate.getMonth()    &&
+    date.getDate()   === otherDate.getDate()
 )
 
 const startedFromGroup = (group) => group[0]

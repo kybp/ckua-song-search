@@ -4,6 +4,7 @@ import { Provider } from 'react-redux'
 import { createStore } from 'redux'
 import reducer from './reducers'
 import App from './App'
+import './index.css'
 
 export const beginning = new Date(2014, 6, 5)
 

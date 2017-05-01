@@ -1,0 +1,17 @@
+.axes {
+  stroke: #fc0;
+}
+
+.line-chart {
+  fill:   none;
+  stroke: #fc0;
+}
+
+.scatter-point {
+  fill:   #f90;
+  cursor: pointer;
+}
+
+.song-chart {
+  flex: 1;
+}

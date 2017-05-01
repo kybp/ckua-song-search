@@ -7,6 +7,7 @@ import { addSongSets, resetSongSets } from './actions'
 import { setStartDate, setEndDate, resetDates } from './actions'
 import { submitSearch } from './SearchButton'
 import { getQueryString } from '.'
+import './app.css'
 
 const Info = () => (
   <div className="info">

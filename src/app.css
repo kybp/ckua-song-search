@@ -1,0 +1,23 @@
+header {
+  display: flex;
+}
+
+.info {
+  flex:             1;
+  padding-top:      10px;
+  margin-right:     20px;
+  background-color: #292929;
+  border:           3px solid #ccf;
+  border-radius:    2px;
+}
+
+.info .title {
+  font-size: 2em;
+  color:     #fc0;
+  padding:   0px 20px;
+}
+
+.info p {
+  margin:  20px;
+  padding: 0px 20px;
+}

@@ -5,6 +5,7 @@ import DateSelector from './DateSelector'
 import SearchButton from './SearchButton'
 import SearchQuery from './SearchQuery'
 import { setStartDate, setEndDate } from './actions'
+import './search-form.css'
 
 const SearchForm = ({ queries, startDate, endDate, dispatch }) => (
   <div className="search-form">
