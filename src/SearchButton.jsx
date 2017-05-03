@@ -10,9 +10,11 @@ export const submitSearch = (state, dispatch) => {
   const xhr = new XMLHttpRequest()
   xhr.onreadystatechange = () => {
     if (xhr.readyState === 4) {
+      const json = JSON.parse(xhr.response)
+
       if (xhr.status === 200) {
         dispatch(resetSongSets())
-        dispatch(addSongSets(JSON.parse(xhr.response)))
+        dispatch(addSongSets(json))
         dispatch(finishLoadingSongs())
       } else {
         alert(json.error)
