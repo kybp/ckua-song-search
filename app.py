@@ -55,7 +55,7 @@ does no parsing or validating of the fields listed after 'id' parameters.'''
     for query_param in query_string.split('&'):
         param_name, value = split_param(query_param)
 
-        if param_name == 'start' or param_name == 'end':
+        if param_name in ['start', 'end', 'compare']:
             continue
         elif param_name == 'id':
             if query:
@@ -110,37 +110,58 @@ in `FIELDS` to `QueryField` instances.'''
     return parsed_query
 
 class Search():
-    def __init__(self, queries, start_date, end_date):
+    def __init__(self, queries, compare, start_date, end_date):
         self.queries    = queries
+        self.compare    = compare
         self.start_date = start_date
         self.end_date   = end_date
 
     def validate(self):
         minimum_term_length = 3
-        def not_long_enough(value):
-            return len(value.text) < minimum_term_length
-        error_message = 'At least one search field per query must ' +\
-                        'have at least {} characters'.\
-                        format(minimum_term_length)
-        if all(map(not_long_enough, self.queries[0].values())):
+
+        def invalid_query(query):
+            def not_long_enough(value):
+                return len(value.text) < minimum_term_length
+            return all(map(not_long_enough, query.values()))
+
+        if self.compare:
+            invalid = all(map(invalid_query, self.queries))
+        else:
+            invalid = invalid_query(self.queries[0])
+
+        if invalid:
+            error_message = 'At least one search field per query must ' +\
+                            'have at least {} characters'.\
+                            format(minimum_term_length)
             return {'error': error_message}
 
-    def perform(self):
+    def search_series(self):
         next_queries = self.queries[1:]
-        results = []
-        n_songs = len(self.queries) - 1
+        results      = []
+        number_songs = len(next_queries)
+
         for song in self.find_songs(self.queries[0]):
-            next_songs = song.next_songs(n_songs).all()
-            if len(next_songs) < n_songs:
+            next_songs = song.next_songs(number_songs).all()
+            if len(next_songs) < number_songs:
                 continue
             found_match = True
-            for i in range(n_songs):
+            for i in range(number_songs):
                 if not check_song(next_songs[i], next_queries[i]):
                     found_match = False
                     break
             if found_match:
                 results.append([song] + next_songs)
+
         return results
+
+    def search_compare(self):
+        return [self.find_songs(query).all() for query in self.queries]
+
+    def perform(self):
+        if self.compare:
+            return self.search_compare()
+        else:
+            return self.search_series()
 
     def find_songs(self, query):
         q = Song.query.order_by(Song.started.desc())
@@ -171,18 +192,21 @@ class Search():
 
     @classmethod
     def from_query_string(cls, query_string):
+        compare    = False
         start_date = None
         end_date   = None
 
         for query_param in query_string.split('&'):
             param_name, value = split_param(query_param)
-            if param_name == 'start' and value:
+            if param_name == 'compare':
+                compare = True
+            elif param_name == 'start' and value:
                 start_date = datetime.strptime(value, '%Y-%m-%d')
             elif param_name == 'end' and value:
                 end_date = datetime.strptime(value, '%Y-%m-%d')
 
         queries = [parse_query(query) for query in split_queries(query_string)]
-        return cls(queries, start_date, end_date)
+        return cls(queries, compare, start_date, end_date)
 
 def check_song(song, query):
     def matches(attr):
