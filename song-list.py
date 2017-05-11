@@ -128,7 +128,7 @@ def read_songs_for_date(date):
         song.persist()
 
 def main():
-    read_songs_for_date(date(2017, 4, 3))
+    read_songs_for_date(date(2017, 5, 14))
 
 if __name__ == '__main__':
     main()

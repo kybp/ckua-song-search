@@ -7,8 +7,9 @@ from pytz import timezone, UTC
 from sqlalchemy import text
 
 app = Flask(__name__, static_folder='dist')
-app.config['JSONIFY_PRETTYPRINT_REGULAR'] = False
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgres://localhost:5432/ckua'
+app.config['JSONIFY_PRETTYPRINT_REGULAR']    = False
+app.config['SQLALCHEMY_DATABASE_URI']        = 'postgres://localhost:5432/ckua'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
 class Song(db.Model):
@@ -169,7 +170,8 @@ class Search():
         def filter_contains(attr):
             query_attr = query[attr].normalized()\
                          .replace('=', '==')\
-                         .replace('%', '=%').replace('_', '=_')
+                         .replace('%', '=%')\
+                         .replace('_', '=_')
             if not query_attr:
                 return q
             if not query[attr].lock_left:
@@ -209,6 +211,7 @@ class Search():
         return cls(queries, compare, start_date, end_date)
 
 def check_song(song, query):
+    '''Return whether the given `Song` instance satisfies `query`.'''
     def matches(attr):
         query_attr = query[attr].normalized()
         if not query_attr:
@@ -220,10 +223,7 @@ def check_song(song, query):
             return False
         return query_attr in model_attr
 
-    for field in FIELDS:
-        if not matches(field):
-            return False
-    return True
+    return all(map(matches, FIELDS))
 
 @app.route('/search')
 def search_route():

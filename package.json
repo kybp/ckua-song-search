@@ -1,5 +1,6 @@
 {
   "scripts": {
+    "postinstall": "webpack",
     "build": "webpack",
     "test": "karma start"
   },
