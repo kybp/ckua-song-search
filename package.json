@@ -2,7 +2,9 @@
   "scripts": {
     "postinstall": "webpack",
     "build": "webpack",
-    "test": "karma start"
+    "test": "karma start",
+    "db-dump": "pg_dump ckua --no-owner > db.sql",
+    "db-restore": "createdb ckua; psql ckua < db.sql"
   },
   "dependencies": {
     "babel-core": "^6.24.0",

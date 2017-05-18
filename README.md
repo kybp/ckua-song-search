@@ -22,8 +22,7 @@ dump of such a database (current to May 14th, 2017) is provided in the file
 `db.sql` and (assuming appropriate system privileges) the database can be
 created and populated with the commands:
 
-    createdb ckua
-    psql ckua < db.sql
+    npm run db-restore
 
 Finally, the app can be started with:
 
