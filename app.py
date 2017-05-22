@@ -26,7 +26,18 @@ class Song(db.Model):
             .query\
             .filter(Song.started > self.started)\
             .order_by(Song.started.asc())\
-            .limit(n)
+            .limit(n)\
+            .all()
+
+    def previous_songs(self, n):
+        songs = Song\
+            .query\
+            .filter(Song.started < self.started)\
+            .order_by(Song.started.desc())\
+            .limit(n)\
+            .all()
+        songs.reverse()
+        return songs
 
 class JSONSongEncoder(JSONEncoder):
     def default(self, obj):
@@ -117,38 +128,49 @@ class Search():
         self.start_date = start_date
         self.end_date   = end_date
 
-    def validate(self):
-        def all_fields_empty(query):
-            def is_empty(field):
-                return len(field.text) == 0
-            return all(map(is_empty, query.values()))
+    def all_fields_empty(self, query):
+        '''Return `True` if the text of every field in `query` is empty,
+otherwise return `False`.'''
+        def is_empty(field):
+            return len(field.text) == 0
+        return all(map(is_empty, query.values()))
 
+    def validate(self):
         error_message = None
 
-        if self.compare and all(map(all_fields_empty, self.queries)):
+        if self.compare and any(map(self.all_fields_empty, self.queries)):
             error_message = 'In a comparison search, each query must ' +\
                             'have at least 1 non-empty field.'
-        elif all_fields_empty(self.queries[0]):
+        elif all(map(self.all_fields_empty, self.queries)):
             error_message = 'A search must have at least 1 non-empty field.'
 
         return {'error': error_message} if error_message else None
 
     def search_series(self):
-        next_queries = self.queries[1:]
-        results      = []
-        number_songs = len(next_queries)
+        key_index = None
+        for i, query in enumerate(self.queries):
+            if not self.all_fields_empty(query):
+                key_index = i
+                break
+        key_query = self.queries[key_index]
+        matching_songs = self.find_songs(key_query)
+        queries_after  = self.queries[key_index + 1:]
+        number_songs_before = key_index
+        number_songs_after  = len(queries_after)
+        results = []
 
-        for song in self.find_songs(self.queries[0]):
-            next_songs = song.next_songs(number_songs).all()
-            if len(next_songs) < number_songs:
+        for song in matching_songs:
+            songs_after = song.next_songs(number_songs_after)
+            if len(songs_after) < number_songs_after:
                 continue
             found_match = True
-            for i in range(number_songs):
-                if not check_song(next_songs[i], next_queries[i]):
+            for i in range(number_songs_after):
+                if not check_song(songs_after[i], queries_after[i]):
                     found_match = False
                     break
             if found_match:
-                results.append([song] + next_songs)
+                songs_before = song.previous_songs(number_songs_before)
+                results.append(songs_before + [song] + songs_after)
 
         return results
 
