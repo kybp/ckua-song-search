@@ -54,8 +54,11 @@ class JSONSongEncoder(JSONEncoder):
 app.json_encoder = JSONSongEncoder
 
 def split_param(query_param):
-    param_name, value = query_param.split('=')
-    return param_name, unquote(value)
+    try:
+        param_name, value = query_param.split('=')
+        return param_name, unquote(value)
+    except ValueError:
+        return '', ''
 
 def split_queries(query_string):
     '''Split a query string into an array of dicts for each query. A new query
@@ -132,7 +135,7 @@ class Search():
         '''Return `True` if the text of every field in `query` is empty,
 otherwise return `False`.'''
         def is_empty(field):
-            return len(field.text) == 0
+            return len(field.normalized()) == 0
         return all(map(is_empty, query.values()))
 
     def validate(self):
@@ -144,7 +147,7 @@ otherwise return `False`.'''
         elif all(map(self.all_fields_empty, self.queries)):
             error_message = 'A search must have at least 1 non-empty field.'
 
-        return {'error': error_message} if error_message else None
+        return error_message
 
     def search_series(self):
         key_index = None
@@ -247,9 +250,9 @@ def check_song(song, query):
 @app.route('/search')
 def search_route():
     search = Search.from_query_string(request.query_string.decode())
-    errors = search.validate()
-    if errors:
-        return jsonify(errors), 400
+    error  = search.validate()
+    if error:
+        return jsonify({'error': error}), 400
     return jsonify(search.perform())
 
 @app.route('/')
