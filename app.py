@@ -22,6 +22,8 @@ class Song(db.Model):
     started = db.Column(db.DateTime())
 
     def next_songs(self, n):
+        '''Return a list of the `n` songs played immediately after this song,
+in ascending order of start time.'''
         return Song\
             .query\
             .filter(Song.started > self.started)\
@@ -30,6 +32,8 @@ class Song(db.Model):
             .all()
 
     def previous_songs(self, n):
+        '''Return a list of the `n` songs played immediately before this song,
+in ascending order of start time.'''
         songs = Song\
             .query\
             .filter(Song.started < self.started)\
@@ -54,6 +58,9 @@ class JSONSongEncoder(JSONEncoder):
 app.json_encoder = JSONSongEncoder
 
 def split_param(query_param):
+    '''Return a `(key, value)` tuple from a 'key=value' string, and
+de-URL-encode the value. If `query_param` is not of the form 'key=value',
+return a tuple of two empty strings.'''
     try:
         param_name, value = query_param.split('=')
         return param_name, unquote(value)
@@ -84,15 +91,20 @@ does no parsing or validating of the fields listed after 'id' parameters.'''
 
     return result
 
+# The text fields included in a song
 FIELDS = ['artist', 'title', 'album']
 
 class QueryField():
+    '''A single text field in one song query.'''
+
     def __init__(self):
         self.text       = ''
         self.lock_left  = False
         self.lock_right = False
 
     def normalized(self):
+        '''Return the text of the field in lowercase with all leading and
+trailing whitespace removed'''
         return self.text.lower().strip()
 
 def try_read_lock(parsed_query, unparsed_query, key):
@@ -125,6 +137,10 @@ in `FIELDS` to `QueryField` instances.'''
     return parsed_query
 
 class Search():
+    '''A search to be parsed from a query string with `from_query_string`,
+checked for errors with `validate`, and if none are found, called to fetch
+results from the database with `perform`.'''
+
     def __init__(self, queries, compare, start_date, end_date):
         self.queries    = queries
         self.compare    = compare
@@ -139,6 +155,8 @@ otherwise return `False`.'''
         return all(map(is_empty, query.values()))
 
     def validate(self):
+        '''If the search should not be performed, return an error message
+indicating why not. If the search is valid, return None.'''
         error_message = None
 
         if self.compare and any(map(self.all_fields_empty, self.queries)):
@@ -150,6 +168,8 @@ otherwise return `False`.'''
         return error_message
 
     def search_series(self):
+        '''Run the search, treating the list of queries as a sequence of
+consecutive songs to find. To be called by `perform`.'''
         key_index = None
         for i, query in enumerate(self.queries):
             if not self.all_fields_empty(query):
@@ -178,15 +198,20 @@ otherwise return `False`.'''
         return results
 
     def search_compare(self):
+        '''Run the search, treating each query as an individual single-song
+search. To be called by `perform`.'''
         return [self.find_songs(query).all() for query in self.queries]
 
     def perform(self):
+        '''Run the search and return the results as a list of lists, where each
+child list is one match.'''
         if self.compare:
             return self.search_compare()
         else:
             return self.search_series()
 
     def find_songs(self, query):
+        '''Return all songs from the database that match `query`.'''
         q = Song.query.order_by(Song.started.desc())
 
         def filter_contains(attr):
@@ -216,6 +241,7 @@ otherwise return `False`.'''
 
     @classmethod
     def from_query_string(cls, query_string):
+        '''Return a `Search` instance parsed from `query_string`.'''
         compare    = False
         start_date = None
         end_date   = None
