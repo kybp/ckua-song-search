@@ -29,3 +29,13 @@ Finally, the app can be started with:
     python app.py
 
 ...and then it should be available at `http://localhost:5000`!
+
+## Additional Commands
+
+The following NPM scripts are provided; they can be run by entering `npm run
+$script_name` in the project root.
+
+    build      - rebuild the frontend sources
+    test       - run the test suite
+    db-dump    - overwrite db.sql with the current state of the ckua database
+    db-restore - populate the database from db.sql, creating it first if needed
