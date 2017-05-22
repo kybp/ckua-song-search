@@ -118,23 +118,20 @@ class Search():
         self.end_date   = end_date
 
     def validate(self):
-        minimum_term_length = 3
+        def all_fields_empty(query):
+            def is_empty(field):
+                return len(field.text) == 0
+            return all(map(is_empty, query.values()))
 
-        def invalid_query(query):
-            def not_long_enough(value):
-                return len(value.text) < minimum_term_length
-            return all(map(not_long_enough, query.values()))
+        error_message = None
 
-        if self.compare:
-            invalid = all(map(invalid_query, self.queries))
-        else:
-            invalid = invalid_query(self.queries[0])
+        if self.compare and all(map(all_fields_empty, self.queries)):
+            error_message = 'In a comparison search, each query must ' +\
+                            'have at least 1 non-empty field.'
+        elif all_fields_empty(self.queries[0]):
+            error_message = 'A search must have at least 1 non-empty field.'
 
-        if invalid:
-            error_message = 'At least one search field per query must ' +\
-                            'have at least {} characters'.\
-                            format(minimum_term_length)
-            return {'error': error_message}
+        return {'error': error_message} if error_message else None
 
     def search_series(self):
         next_queries = self.queries[1:]
