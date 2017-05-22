@@ -35,7 +35,9 @@ Finally, the app can be started with:
 The following NPM scripts are provided; they can be run by entering `npm run
 $script_name` in the project root.
 
-    build      - rebuild the frontend sources
-    test       - run the test suite
-    db-dump    - overwrite db.sql with the current state of the ckua database
-    db-restore - populate the database from db.sql, creating it first if needed
+    build          - rebuild the frontend sources
+    test           - run the test suite
+    db-dump        - overwrite db.sql with the current state of the database
+    db-restore     - populate the database from db.sql, creating it if needed
+    save-date      - save the supplied date's playlist data in the database
+    save-yesterday - save yesterday's playlist data in the database

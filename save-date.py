@@ -1,8 +1,8 @@
-#!/usr/bin/env python3
-from datetime import date, datetime
+from datetime import datetime
 from html.parser import HTMLParser
-from sys import stderr
+from sys import argv, stderr
 from urllib.request import Request, urlopen
+
 import sqlalchemy as sql
 from sqlalchemy.exc import IntegrityError
 
@@ -128,7 +128,15 @@ def read_songs_for_date(date):
         song.persist()
 
 def main():
-    read_songs_for_date(date(2017, 5, 14))
+    if (len(argv) < 2):
+        print('Usage: {} date'.format(argv[0]))
+        exit(1)
+    try:
+        read_songs_for_date(datetime.strptime(argv[1], '%Y-%m-%d'))
+    except ValueError:
+        print('Invalid date (expected yyyy-mm-dd): {}'.format(argv[1]),
+              file=stderr)
+        exit(1)
 
 if __name__ == '__main__':
     main()

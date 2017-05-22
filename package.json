@@ -4,7 +4,9 @@
     "build": "webpack",
     "test": "karma start",
     "db-dump": "pg_dump ckua --no-owner > db.sql",
-    "db-restore": "createdb ckua; psql ckua < db.sql"
+    "db-restore": "createdb ckua; psql ckua < db.sql",
+    "save-date": "python save-date.py",
+    "save-yesterday": "python save-date.py `date -d yesterday +%Y-%m-%d`"
   },
   "dependencies": {
     "babel-core": "^6.24.0",
