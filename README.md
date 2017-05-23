@@ -15,7 +15,7 @@ dependencies and build the app, from the project root run `yarn` (or `npm i`).
 
 The app will assume there is a database of songs available at
 `postgres://localhost:5432/ckua`; a dump of such a database (current to May
-14th, 2017) is provided in the file `db.sql` and (assuming appropriate system
+22nd, 2017) is provided in the file `db.sql` and (assuming appropriate system
 privileges) the database can be created and populated with the commands:
 
     npm run db-restore
