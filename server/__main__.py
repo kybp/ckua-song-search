@@ -5,7 +5,7 @@ from pytz import timezone, UTC
 from server.models import db, Song
 from server.query_parser import search_from_query_string
 
-app = Flask(__name__, static_folder='dist')
+app = Flask(__name__, static_folder='../dist')
 app.config['JSONIFY_PRETTYPRINT_REGULAR']    = False
 app.config['SQLALCHEMY_DATABASE_URI']        = 'postgres://localhost:5432/ckua'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
