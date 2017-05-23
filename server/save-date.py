@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from html.parser import HTMLParser
 from sys import argv, stderr
 from urllib.request import Request, urlopen
@@ -124,16 +124,26 @@ def read_songs_for_date(date):
     for song in parser.songs:
         song.persist()
 
-def main():
-    if (len(argv) < 2):
-        print('Usage: {} date'.format(argv[0]))
-        exit(1)
+def read_songs_for_datestring(string):
     try:
-        read_songs_for_date(datetime.strptime(argv[1], '%Y-%m-%d'))
+        read_songs_for_date(datetime.strptime(string, '%Y-%m-%d').date())
     except ValueError:
-        print('Invalid date (expected yyyy-mm-dd): {}'.format(argv[1]),
+        print('Invalid date (expected yyyy-mm-dd): {}'.format(string),
               file=stderr)
         exit(1)
+
+def read_songs_for_yesterday():
+    yesterday = (datetime.now() - timedelta(days=1)).date()
+    read_songs_for_date(yesterday)
+
+def main():
+    if len(argv) < 2:
+        print('Usage: {} date'.format(argv[0]))
+        exit(1)
+    elif argv[1].lower() == 'yesterday':
+        read_songs_for_yesterday()
+    else:
+        read_songs_for_datestring(argv[1])
 
 if __name__ == '__main__':
     main()
