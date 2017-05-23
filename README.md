@@ -11,32 +11,31 @@ that they can continue making it.
 ## Building and Running
 
 This app requires PostgreSQL, Python 3, pip, and Node.JS. To install
-dependencies and build the app, from the project root run:
+dependencies and build the app, from the project root run `yarn` (or `npm i`).
 
-    pip install -r requirements.txt
-    yarn
-
-Of course, you can replace `yarn` with `npm i` if you want. The app will assume
-there is a database of songs available at `postgres://localhost:5432/ckua`; a
-dump of such a database (current to May 14th, 2017) is provided in the file
-`db.sql` and (assuming appropriate system privileges) the database can be
-created and populated with the commands:
+The app will assume there is a database of songs available at
+`postgres://localhost:5432/ckua`; a dump of such a database (current to May
+14th, 2017) is provided in the file `db.sql` and (assuming appropriate system
+privileges) the database can be created and populated with the commands:
 
     npm run db-restore
 
 Finally, the app can be started with:
 
-    python app.py
+    npm run start
 
 ...and then it should be available at `http://localhost:5000`!
 
-## Additional Commands
+## Commands
 
 The following NPM scripts are provided; they can be run by entering `npm run
 $script_name` in the project root.
 
     build          - rebuild the frontend sources
+    start          - run the application
     test           - run the test suite
+    test-client    - run only the tests for the frontend
+    test-server    - run only the tests for the backend
     db-dump        - overwrite db.sql with the current state of the database
     db-restore     - populate the database from db.sql, creating it if needed
     save-date      - save the supplied date's playlist data in the database

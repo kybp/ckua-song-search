@@ -26,12 +26,9 @@ class Song():
         self.title   = title
         self.artist  = artist
         self.album   = album
-        self.started = self.datetime_from_string(started, date)
-
-    def datetime_from_string(self, string, date):
-        time = datetime.strptime(string, "%I:%M %p")
-        return datetime(date.year, date.month, date.day,
-                        time.hour, time.minute)
+        started_time = datetime.strptime(started, "%I:%M %p")
+        self.started = datetime(date.year, date.month, date.day,
+                                started_time.hour, started_time.minute)
 
     def persist(self):
         try:

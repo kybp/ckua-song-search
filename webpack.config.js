@@ -2,8 +2,7 @@ const webpack    = require('webpack')
 const path       = require('path')
 const HtmlPlugin = require('html-webpack-plugin')
 
-const srcDir   = path.join(__dirname, 'src')
-const buildDir = path.join(__dirname, 'dist')
+const { srcDir, buildDir } = require('./config')
 
 module.exports = {
   entry: ['babel-polyfill', path.join(srcDir, 'index.jsx')],

@@ -1,3 +1,8 @@
+const path   = require('path')
+const config = require('./config')
+
+const testFiles = path.join(config.srcDir, '**', '*.test.js')
+
 module.exports = (config) => {
   config.set({
     basePath: '',
@@ -5,13 +10,13 @@ module.exports = (config) => {
     colors: true,
     files: [
       'node_modules/babel-polyfill/dist/polyfill.js',
-      'src/**/*.test.js'],
+      testFiles],
     frameworks: ['mocha', 'chai'],
     reporters: ['mocha'],
     autoWatch: true,
     singleRun: false,
     preprocessors: {
-      'src/**/*.test.js': ['webpack']
+      [testFiles]: ['webpack']
     },
     webpack: require('./webpack.config'),
     webpackMiddleware: {

@@ -1,12 +1,16 @@
 {
   "scripts": {
+    "preinstall": "pip install -r requirements.txt",
     "postinstall": "webpack",
     "build": "webpack",
-    "test": "karma start",
+    "start": "python -m server",
+    "test": "npm run test-server && npm run test-client",
+    "test-client": "karma start",
+    "test-server": "python -m unittest discover server/test/ '*_test.py'",
     "db-dump": "pg_dump ckua --no-owner > db.sql",
     "db-restore": "createdb ckua; psql ckua < db.sql",
-    "save-date": "python save-date.py",
-    "save-yesterday": "python save-date.py `date -d yesterday +%Y-%m-%d`"
+    "save-date": "python server/save-date.py",
+    "save-yesterday": "python server/save-date.py `date -d yesterday +%Y-%m-%d`"
   },
   "dependencies": {
     "babel-core": "^6.24.0",
