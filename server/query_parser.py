@@ -36,7 +36,7 @@ does no parsing or validating of the fields listed after 'id' parameters.'''
     for query_param in query_string.split('&'):
         param_name, value = split_param(query_param)
 
-        if param_name in ['start', 'end', 'compare']:
+        if param_name in ['', 'start', 'end', 'compare']:
             continue
         elif param_name == 'id':
             if query:
@@ -79,6 +79,12 @@ in `FIELDS` to `QueryField` instances.'''
 
     return parsed_query
 
+def try_parse_date(string):
+    try:
+        return datetime.strptime(string, '%Y-%m-%d')
+    except ValueError:
+        return None
+
 def search_from_query_string(query_string):
     '''Return a `Search` instance parsed from `query_string`.'''
     compare    = False
@@ -90,9 +96,9 @@ def search_from_query_string(query_string):
         if param_name == 'compare':
             compare = True
         elif param_name == 'start' and value:
-            start_date = datetime.strptime(value, '%Y-%m-%d')
+            start_date = try_parse_date(value)
         elif param_name == 'end' and value:
-            end_date = datetime.strptime(value, '%Y-%m-%d')
+            end_date = try_parse_date(value)
 
     queries = [parse_query(query) for query in split_queries(query_string)]
     return Search(queries, compare, start_date, end_date)
