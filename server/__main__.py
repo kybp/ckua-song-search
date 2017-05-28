@@ -1,5 +1,6 @@
 from flask import Flask, jsonify, request
 from flask.json import JSONEncoder
+from flask_cors import cross_origin
 from pytz import timezone, UTC
 
 from server.models import db, Song
@@ -25,6 +26,7 @@ class JSONSongEncoder(JSONEncoder):
 app.json_encoder = JSONSongEncoder
 
 @app.route('/search')
+@cross_origin()
 def search_route():
     search = search_from_query_string(request.query_string.decode())
     error  = search.error_message()
