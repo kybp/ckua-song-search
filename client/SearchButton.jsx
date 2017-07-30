@@ -21,14 +21,15 @@ export const submitSearch = (state, dispatch) => {
       }
     }
   }
-  xhr.open('GET', `http://localhost:5000/search?${getQueryString(state)}`)
-  xhr.send()
+  xhr.open('POST', '/search')
+  xhr.setRequestHeader('Content-Type', 'application/json')
+  xhr.send(JSON.stringify(state))
 }
 
 class SearchButton extends Component {
   handleSubmit() {
-    const { queries, songSets, startDate, endDate } = this.props
-    submitSearch({ queries, songSets, startDate, endDate },
+    const { queries, startDate, endDate } = this.props
+    submitSearch({ queries, startDate, endDate },
                  this.props.dispatch)
   }
 

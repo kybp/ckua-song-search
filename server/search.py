@@ -5,13 +5,30 @@ def all_fields_empty(query):
     '''Return `True` if the text of every field in `query` is empty,
 otherwise return `False`.'''
     def is_empty(field):
-        return len(field.normalized()) == 0
+        return len(normalized(field)) == 0
     return all(map(is_empty, query.values()))
 
+def normalized(field):
+    '''Return the text of the field in lowercase with all leading and
+trailing whitespace removed'''
+    return field['text'].lower().strip()
+
 class Search():
-    '''A search to be parsed from a query string with `from_query_string`,
-checked for errors with `error_message`, and if none are found, called to fetch
-results from the database with `perform`.'''
+    '''A search to be run in the database. Searches can be created from a request
+with `Search.from_request`. Once created, a search should be validated with the
+`error_message` method, which will return `None` if the search is valid. A
+search can then be executed with `perform`.'''
+
+    @classmethod
+    def from_request(cls, request):
+        json = request.get_json()
+        return cls(
+            [{field: query[field] for field in FIELDS}
+             for query in json.get('queries')],
+            json.get('compare'),
+            json.get('startDate'),
+            json.get('endDate')
+        )
 
     def __init__(self, queries, compare, start_date, end_date):
         self.queries    = queries
@@ -80,21 +97,21 @@ child list is one match.'''
         q = Song.query.order_by(Song.started.desc())
 
         def filter_contains(attr):
-            query_attr = query[attr].normalized()\
+            query_attr = normalized(query[attr])\
                          .replace('=', '==')\
                          .replace('%', '=%')\
                          .replace('_', '=_')
             if not query_attr:
                 return q
-            if not query[attr].lock_left:
+            if not query[attr]['lockLeft']:
                 query_attr = '%' + query_attr
-            if not query[attr].lock_right:
+            if not query[attr]['lockRight']:
                 query_attr += '%'
             return q.filter(text("{} ilike :{} escape '='".format(attr, attr)))\
                 .params(**{attr: query_attr})
 
         for field in FIELDS:
-            if query[field].text:
+            if query[field]['text']:
                 q = filter_contains(field)
 
         if self.start_date:
@@ -107,13 +124,13 @@ child list is one match.'''
 def check_song(song, query):
     '''Return whether the given `Song` instance satisfies `query`.'''
     def matches(attr):
-        query_attr = query[attr].normalized()
+        query_attr = normalized(query[attr])
         if not query_attr:
             return True
         model_attr = getattr(song, attr).lower()
-        if query[attr].lock_left and not model_attr.startswith(query_attr):
+        if query[attr]['lockLeft'] and not model_attr.startswith(query_attr):
             return False
-        if query[attr].lock_right and not model_attr.endswith(query_attr):
+        if query[attr]['lockRight'] and not model_attr.endswith(query_attr):
             return False
         return query_attr in model_attr
 

@@ -4,7 +4,7 @@ from flask_cors import cross_origin
 from pytz import timezone, UTC
 
 from server.models import db, Song
-from server.query_parser import search_from_query_string
+from server.search import Search
 
 app = Flask(__name__, static_folder='../dist')
 app.config['JSONIFY_PRETTYPRINT_REGULAR']    = False
@@ -25,10 +25,10 @@ class JSONSongEncoder(JSONEncoder):
         return super(JSONSongEncoder, self).default(obj)
 app.json_encoder = JSONSongEncoder
 
-@app.route('/search')
+@app.route('/search', methods=['POST'])
 @cross_origin()
 def search_route():
-    search = search_from_query_string(request.query_string.decode())
+    search = Search.from_request(request)
     error  = search.error_message()
     if error:
         return jsonify({'error': error}), 400
