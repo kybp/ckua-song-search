@@ -14,9 +14,9 @@ This app requires PostgreSQL, Python 3, pip, and Node.JS. To install
 dependencies and build the app, from the project root run `yarn` (or `npm i`).
 
 The f app will assume there is a database of songs available at
-`postgres://localhost:5432/ckua`; a dump of such a database (current to July
-29th, 2017) is provided in the file `db.sql` and (assuming appropriate system
-privileges) the database can be created and populated with the commands:
+`postgres://localhost:5432/ckua`; a dump of such a database (current to
+September 11th, 2017) is provided in the file `db.sql` and (assuming appropriate
+system privileges) the database can be created and populated with the commands:
 
     npm run db-restore
 
